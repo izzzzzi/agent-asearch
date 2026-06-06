@@ -7,9 +7,9 @@
 
 Язык: Русский | [English](README.en.md)
 
-Инструмент поиска для LLM-агентов.
+Поисковый CLI для LLM-агентов. Одна команда — 10 источников.
 
-`asearch` объединяет поиск по вебу, Reddit, Hacker News, GitHub, YouTube, X/Twitter и специализированным API (Tavily, Exa, Brave) в один CLI. Команды возвращают компактный JSON с метаданными, а агент читает только нужные строки — токен-эффективный session-based workflow, как у [`assh`](https://github.com/izzzzzi/agent-assh) и [`aget`](https://github.com/izzzzzi/agent-aget).
+`asearch` ищет одновременно в вебе, Hacker News, Reddit, GitHub, YouTube и X/Twitter, а также через Tavily, Exa и Brave. Не засоряет контекст агента: сначала возвращает компактные метаданные, потом агент читает только нужные страницы через пагинацию. Один Go-бинарь, нулевые зависимости.
 
 ![asearch architecture](docs/asearch-architecture.png)
 

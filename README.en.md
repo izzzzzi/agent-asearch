@@ -5,9 +5,9 @@
 
 Language: [Русский](README.md) | English
 
-`asearch` — multi-source search CLI for LLM agents.
+Search CLI for LLM agents. One command, 10 sources.
 
-Built on the same principles as [`assh`](https://github.com/izzzzzi/agent-assh) (SSH) and [`aget`](https://github.com/izzzzzi/agent-aget) (browser): always returns JSON, session-based workflow with `sid` and `next_commands`, token-efficient paginated reads.
+`asearch` searches the web, Hacker News, Reddit, GitHub, YouTube, and X/Twitter simultaneously, plus Tavily, Exa, and Brave APIs. Keeps agent context clean: compact metadata first, then paginated reads of only what you need. One Go binary, zero dependencies.
 
 ![asearch architecture](docs/asearch-architecture.png)
 
