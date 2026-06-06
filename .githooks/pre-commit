@@ -1,0 +1,21 @@
+#!/bin/sh
+# Pre-commit: gofmt + go vet + npm smoke
+set -e
+
+# Only run if Go files changed
+if git diff --cached --name-only | grep -q '\.go$'; then
+  echo "→ gofmt check..."
+  UNFMT=$(gofmt -l .)
+  if [ -n "$UNFMT" ]; then
+    echo "ERROR: unformatted Go files:"
+    echo "$UNFMT"
+    echo "Run: gofmt -w ."
+    exit 1
+  fi
+
+  echo "→ go vet..."
+  go vet ./...
+
+  echo "→ go build..."
+  go build ./cmd/asearch
+fi

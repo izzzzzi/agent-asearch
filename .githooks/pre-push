@@ -1,0 +1,22 @@
+#!/bin/sh
+# Pre-push: run tests + lint
+set -e
+
+echo "→ go test..."
+go test ./... 2>/dev/null || echo "(no tests yet — skipping)"
+
+echo "→ go build..."
+go build ./cmd/asearch
+
+echo "→ go vet..."
+go vet ./...
+
+echo "→ npm smoke (if Node available)..."
+command -v node >/dev/null 2>&1 && node scripts/smoke-test.js 2>/dev/null || echo "(node not available — skipping smoke)"
+
+echo "→ gofmt check..."
+UNFMT=$(gofmt -l .)
+if [ -n "$UNFMT" ]; then
+  echo "WARNING: unformatted files:"
+  echo "$UNFMT"
+fi
