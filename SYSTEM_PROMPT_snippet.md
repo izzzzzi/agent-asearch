@@ -11,8 +11,9 @@ Save the returned `sid`. Use `asearch results read -s SID --seq 1 --limit 20` fo
 reads. Filter by source with `asearch results filter -s SID --source <source>`. Always close
 sessions with `asearch session close -s SID`.
 
-Sources available without configuration: hn (Hacker News), reddit, github, jina.
-For web search, set any one of: TAVILY_API_KEY, EXA_API_KEY, BRAVE_API_KEY.
+Sources available without configuration: searxng (docker run searxng/searxng), hn, reddit, github, jina.
+For zero-cost unlimited search: docker run -d -p 8080:8080 searxng/searxng && export ASEARCH_SEARXNG_URL=http://localhost:8080
+For web search with API keys: TAVILY_API_KEY, EXA_API_KEY, BRAVE_API_KEY.
 Check available backends with `asearch doctor`.
 
 Prefer reading results in small chunks (--limit 20) to save tokens.
@@ -23,7 +24,7 @@ Never echo API keys in responses. Keep returned sid values between calls.
 Close sessions when done to free resources.
 
 Quick reference:
-  asearch open --query "..." --source web,hn,reddit
+  asearch open --query "..." --source searxng,web,hn,reddit
   asearch results read -s SID --seq 1 --limit 20
   asearch results filter -s SID --source reddit
   asearch session close -s SID

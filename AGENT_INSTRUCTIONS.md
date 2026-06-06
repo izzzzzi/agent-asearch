@@ -39,11 +39,19 @@ asearch session close -s SID
 
 ### Без настройки (zero-config)
 
+- **searxng** — само-поднимаемый мета-поисковик (Google + Bing + DDG + 70 движков).
+  Без API-ключей, без лимитов, без цензуры. Запуск за 30 секунд:
+  ```bash
+  docker run -d -p 8080:8080 searxng/searxng
+  export ASEARCH_SEARXNG_URL=http://localhost:8080
+  asearch open --query "запрос" --source searxng
+  ```
+  Если Docker недоступен — пропускается, агент использует web (Tavily/Exa/Brave).
 - **hn** — Algolia Hacker News Search API (всегда работает)
-- **reddit** — Public JSON API (может рейт-лимитить без кук)
+- **reddit** — куки-файл `~/.asearch/reddit-cookies.txt`, либо public JSON
 - **github** — `gh` CLI (для публичных репозиториев)
 - **jina** — URL → markdown reader (jina.ai)
-- **web** — авто-делегирование: если есть Tavily/Exa/Brave ключ — использует его, иначе показывает инструкцию
+- **web** — авто-делегирование: SearXNG → Tavily → Exa → Brave → инструкция
 
 ### Требуют API-ключа
 

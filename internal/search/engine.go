@@ -18,6 +18,7 @@ const (
 	SourceGitHub  Source = "github"
 	SourceYouTube Source = "youtube"
 	SourceTavily  Source = "tavily"
+	SourceSearXNG Source = "searxng"
 )
 
 type Result struct {
@@ -66,6 +67,7 @@ func Search(req SearchRequest) (*SearchResult, error) {
 
 	allBackends := []Backend{
 		&TavilyBackend{},
+		&SearXNGBackend{},
 		&BraveBackend{},
 		&ExaBackend{},
 		&WebBackend{},

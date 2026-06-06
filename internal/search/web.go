@@ -10,14 +10,26 @@ import (
 )
 
 // WebBackend delegates to the best available web search API.
-// Priority: Tavily > Brave > Exa > SearXNG > error with guidance.
+// Priority: SearXNG (self-hosted, no limits) > Tavily > Exa > Brave > error.
 type WebBackend struct{}
 
 func (b *WebBackend) Name() Source   { return SourceWeb }
 func (b *WebBackend) Available() bool { return true }
 
 func (b *WebBackend) Search(query string, limit int) ([]Result, error) {
-	// 1. Tavily — best quality
+	// 1. SearXNG — self-hosted, zero cost, unlimited
+	if os.Getenv("ASEARCH_SEARXNG_URL") != "" {
+		sb := &SearXNGBackend{}
+		results, err := sb.Search(query, limit)
+		if err == nil && len(results) > 0 {
+			for i := range results {
+				results[i].Source = SourceWeb
+			}
+			return results, nil
+		}
+	}
+
+	// 2. Tavily — best AI quality
 	if os.Getenv("TAVILY_API_KEY") != "" {
 		tb := &TavilyBackend{}
 		results, err := tb.Search(query, limit)
@@ -63,12 +75,13 @@ func (b *WebBackend) Search(query string, limit int) ([]Result, error) {
 
 	// 5. Clear guidance
 	return nil, fmt.Errorf(
-		"web search needs an API key. Options:\n"+
-			"  • Tavily (best):     export TAVILY_API_KEY=\"tvly-...\"  (free tier at tavily.com)\n"+
-			"  • Brave Search:      export BRAVE_API_KEY=\"BSA...\"     (2000 free/month at brave.com/search/api)\n"+
+		"web search needs a backend. Options (pick one):\n"+
+			"  • SearXNG (best):    docker run -d -p 8080:8080 searxng/searxng\n"+
+			"                        export ASEARCH_SEARXNG_URL=http://localhost:8080\n"+
+			"  • Tavily (AI):       export TAVILY_API_KEY=\"tvly-...\"  (free tier at tavily.com)\n"+
 			"  • Exa (semantic):    export EXA_API_KEY=\"...\"           (free tier at exa.ai)\n"+
-			"  • Self-host SearXNG: export ASEARCH_SEARXNG_URL=\"http://localhost:8080\"\n"+
-			"  Or use --source tavily directly: asearch open --query \"...\" --source tavily",
+			"  • Brave Search:      export BRAVE_API_KEY=\"BSA...\"     (2000 free/month)\n"+
+			"  Or use --source searxng|tavily|exa directly",
 	)
 }
 

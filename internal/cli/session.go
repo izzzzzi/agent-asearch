@@ -105,16 +105,20 @@ func newPromptCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			prompt := `You are using asearch, a multi-source search CLI for LLM agents.
 All operational commands return JSON.
-Start with asearch open --query "your query" --source web,reddit,hn,github,youtube
+Start with asearch open --query "your query" --source searxng,web,hn,reddit,github,youtube
 Save the returned sid, then use asearch results read -s SID --seq 1 --limit 20
 Filter by source: asearch results filter -s SID --source reddit
 Check available tools: asearch doctor
 List sessions: asearch session list
 Always close sessions: asearch session close -s SID
 
-Sources (zero-config): web (DuckDuckGo), reddit (public JSON), hn (Algolia API), jina (URL reader)
-Sources (needs API key): tavily (TAVILY_API_KEY), brave (BRAVE_API_KEY), exa (EXA_API_KEY)
-Sources (needs tools): github (gh CLI), youtube (yt-dlp), twitter (twitter-cli)
+Sources (zero-config): searxng (docker run searxng/searxng), web (auto-delegate), hn, reddit, github, jina
+Sources (needs API key): tavily (TAVILY_API_KEY), exa (EXA_API_KEY), brave (BRAVE_API_KEY)
+Sources (needs tools): youtube (yt-dlp), twitter (twitter-cli)
+
+For zero-cost unlimited search, start SearXNG:
+  docker run -d -p 8080:8080 searxng/searxng && export ASEARCH_SEARXNG_URL=http://localhost:8080
+Then: asearch open --query "..." --source searxng
 
 Prefer reading results in small chunks (--limit 20) to save tokens.
 Use --raw for piping: asearch results read -s SID --raw | head -50
@@ -138,6 +142,7 @@ func newDoctorCommand() *cobra.Command {
 				Note      string `json:"note,omitempty"`
 			}
 			checks := []check{
+				{Name: "searxng", Available: os.Getenv("ASEARCH_SEARXNG_URL") != "", Tool: "searxng", Note: "Self-hosted meta-search, zero cost, no limits; docker run searxng/searxng"},
 				{Name: "tavily", Available: tavilyAvailable(), Tool: "tavily", Note: "AI-optimized search; set TAVILY_API_KEY (free tier at tavily.com)"},
 				{Name: "brave", Available: os.Getenv("BRAVE_API_KEY") != "", Tool: "brave", Note: "35B-page index, 2000 free/month; set BRAVE_API_KEY (brave.com/search/api)"},
 				{Name: "exa", Available: os.Getenv("EXA_API_KEY") != "", Tool: "exa", Note: "Neural/semantic search; set EXA_API_KEY (exa.ai)"},

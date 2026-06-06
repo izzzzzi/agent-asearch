@@ -21,7 +21,12 @@ npm i -g agent-asearch
 # Бесплатные источники работают сразу
 asearch open --query "claude code plugins" --source hn,reddit
 
-# Для веб-поиска добавьте API-ключ (любой один):
+# Самый дешёвый безлимитный веб-поиск — SearXNG за 30 секунд:
+docker run -d -p 8080:8080 searxng/searxng
+export ASEARCH_SEARXNG_URL=http://localhost:8080
+asearch open --query "claude code plugins" --source searxng
+
+# Или API-ключ для AI-поиска (любой один):
 export TAVILY_API_KEY="tvly-..."    # tavily.com — AI-оптимизированный
 export EXA_API_KEY="..."            # exa.ai — нейро/семантический
 export BRAVE_API_KEY="BSA..."       # brave.com/search/api — 2000 бесплатно/мес
@@ -71,7 +76,8 @@ asearch session close -s a1b2c3d4
 
 | Источник | Статус | Что нужно |
 |----------|:------:|-----------|
-| **web** | ✅ | Авто-делегирование: Tavily → Exa → Brave → SearXNG |
+| **searxng** | 🐳 Docker | `docker run -d -p 8080:8080 searxng/searxng` + `export ASEARCH_SEARXNG_URL=http://localhost:8080` |
+| **web** | ✅ | Авто-делегирование: SearXNG → Tavily → Exa → Brave |
 | **hn** | ✅ | Algolia HN Search API (бесплатно, без ключа) |
 | **reddit** | ✅ | Public JSON API (без ключа) |
 | **github** | ✅ | `gh` CLI (без ключа для публичных репо) |
