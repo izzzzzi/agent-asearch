@@ -1,0 +1,43 @@
+{
+  "name": "agent-asearch",
+  "version": "0.2.0",
+  "description": "Multi-source search CLI for LLM agents",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izzzzzi/agent-asearch.git"
+  },
+  "keywords": [
+    "search",
+    "web-search",
+    "llm",
+    "agent",
+    "cli",
+    "reddit",
+    "hackernews",
+    "github",
+    "youtube"
+  ],
+  "bin": {
+    "asearch": "bin/asearch.js"
+  },
+  "scripts": {
+    "test": "node scripts/smoke-test.js",
+    "postinstall": "node scripts/install.js",
+    "smoke": "node scripts/smoke-test.js",
+    "release:contract": "node scripts/release-contract-test.js",
+    "pack:dry": "npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin/asearch.js",
+    "scripts",
+    "README.md",
+    "README.en.md",
+    "AGENT_INSTRUCTIONS.md",
+    "SYSTEM_PROMPT_snippet.md",
+    "LICENSE"
+  ]
+}

@@ -1,0 +1,29 @@
+# Binaries
+asearch
+/asearch
+*.exe
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# State
+.asearch/
+
+# Go
+*.test
+*.out
+coverage.txt
+
+# Node
+node_modules/
+npm-debug.log
+
+# Dist
+dist/
