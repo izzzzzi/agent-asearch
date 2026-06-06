@@ -103,26 +103,52 @@ func newPromptCommand() *cobra.Command {
 		Short: "Print agent usage instructions",
 		Args:  noPositionalArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			prompt := `You are using asearch, a multi-source search CLI for LLM agents.
-All operational commands return JSON.
-Start with asearch open --query "your query" --source searxng,web,hn,reddit,github,youtube
-Save the returned sid, then use asearch results read -s SID --seq 1 --limit 20
-Filter by source: asearch results filter -s SID --source reddit
-Check available tools: asearch doctor
-List sessions: asearch session list
-Always close sessions: asearch session close -s SID
+			prompt := `You are using asearch — a multi-source search CLI for LLM agents (16 providers).
+All operational commands return JSON with sid + next_commands.
 
-Sources (zero-config): searxng (docker), web (auto-delegate, 10 API providers), hn, reddit, github, jina
-API providers (set any env var): TAVILY_API_KEY, PERPLEXITY_API_KEY, EXA_API_KEY, BRAVE_API_KEY, SERPER_API_KEY, SERPAPI_API_KEY, YOU_API_KEY, FIRECRAWL_API_KEY, PARALLEL_API_KEY
-CLI tools (install once): youtube (yt-dlp), twitter (twitter-cli)
+== QUICK START ==
+  asearch doctor                              # check what's available
+  asearch open --query "topic" --source hn   # zero-config, works immediately
+  asearch results read -s SID --seq 1 --limit 20
+  asearch session close -s SID
 
-For zero-cost unlimited search, start SearXNG:
-  docker run -d -p 8080:8080 searxng/searxng && export ASEARCH_SEARXNG_URL=http://localhost:8080
-Then: asearch open --query "..." --source searxng
+== INSTALL & ACTIVATE EACH PROVIDER ==
 
-Prefer reading results in small chunks (--limit 20) to save tokens.
-Use --raw for piping: asearch results read -s SID --raw | head -50
-Use next_commands from JSON responses to continue workflows.`
+Zero-config (works immediately, nothing to install):
+  hn       — asearch open --query "..." --source hn
+  reddit   — save cookies: ~/.asearch/reddit-cookies.txt (Netscape format from browser)
+  github   — gh CLI already on PATH: asearch open --query "..." --source github
+  jina     — asearch open --query "..." --source jina  (URL-to-markdown reader)
+  youtube  — pipx install yt-dlp && asearch open --query "..." --source youtube
+
+Self-hosted (unlimited, zero cost, 30 seconds):
+  searxng  — docker run -d -p 8080:8080 searxng/searxng
+             export ASEARCH_SEARXNG_URL=http://localhost:8080
+             asearch open --query "..." --source searxng
+
+API keys (pick any one, free tiers available):
+  tavily      — export TAVILY_API_KEY="tvly-..."       (free at tavily.com)
+  perplexity  — export PERPLEXITY_API_KEY="pplx-..."    (free at docs.perplexity.ai)
+  exa         — export EXA_API_KEY="..."                (free at exa.ai)
+  brave       — export BRAVE_API_KEY="BSA..."           (2000 free/mo at brave.com/search/api)
+  serper      — export SERPER_API_KEY="..."             (2500 free/mo at serper.dev)
+  serpapi     — export SERPAPI_API_KEY="..."            (100 free/mo at serpapi.com)
+  you         — export YOU_API_KEY="..."                (free at you.com/api)
+  firecrawl   — export FIRECRAWL_API_KEY="fc-..."       (500 free/mo at firecrawl.dev)
+  parallel    — export PARALLEL_API_KEY="..."           (free at parallel.ai)
+
+  After setting any key, --source web auto-delegates:
+  SearXNG → Tavily → Perplexity → Exa → Brave → Serper → SerpAPI → You → Firecrawl → Parallel
+
+Browser auth (one-time):
+  twitter — pipx install twitter-cli && twitter login  (opens browser, saves cookies)
+            Then: asearch open --query "..." --source twitter
+
+== TOKEN ECONOMY ==
+  Prefer --limit 20 for compact JSON.
+  Filter before reading: asearch results filter -s SID --source reddit
+  Pipe with --raw: asearch results read -s SID --raw | head -50
+  Always close sessions: asearch session close -s SID`
 			fmt.Fprintln(cmd.OutOrStdout(), prompt)
 			return nil
 		},
