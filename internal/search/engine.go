@@ -101,10 +101,15 @@ func Search(req SearchRequest) (*SearchResult, error) {
 			fmt.Fprintf(os.Stderr, `{"ok":false,"source":"%s","warning":"%s"}`+"\n", b.Name(), err.Error())
 			continue
 		}
-		for i := range results {
-			results[i].Seq = len(allResults) + 1
-		}
 		allResults = append(allResults, results...)
+	}
+
+	// Deduplicate by normalized URL
+	allResults = deduplicate(allResults)
+
+	// Re-number after dedup
+	for i := range allResults {
+		allResults[i].Seq = i + 1
 	}
 
 	return &SearchResult{
@@ -182,4 +187,52 @@ func resultsDir() string {
 
 func resultsPath(sid string) string {
 	return resultsDir() + "/" + strings.ToLower(sid) + ".json"
+}
+
+// deduplicate removes results with the same normalized URL.
+// First occurrence wins — earlier backends have higher priority.
+func deduplicate(results []Result) []Result {
+	seen := make(map[string]bool)
+	var out []Result
+	for _, r := range results {
+		key := normalizeURL(r.URL)
+		if key == "" {
+			// No URL — keep it (e.g. AI answers)
+			out = append(out, r)
+			continue
+		}
+		if seen[key] {
+			continue // duplicate, skip
+		}
+		seen[key] = true
+		out = append(out, r)
+	}
+	return out
+}
+
+// normalizeURL strips noise from URLs for dedup comparison.
+func normalizeURL(raw string) string {
+	if raw == "" {
+		return ""
+	}
+	// Lowercase
+	s := strings.ToLower(raw)
+	// Strip protocol
+	s = strings.TrimPrefix(s, "https://")
+	s = strings.TrimPrefix(s, "http://")
+	// Strip www.
+	s = strings.TrimPrefix(s, "www.")
+	// Strip trailing slash
+	s = strings.TrimSuffix(s, "/")
+	// Strip query params for known sites (Reddit, HN, YouTube)
+	if strings.Contains(s, "reddit.com/") || strings.Contains(s, "youtube.com/watch") || strings.Contains(s, "ycombinator.com/") {
+		if idx := strings.Index(s, "?"); idx >= 0 {
+			s = s[:idx]
+		}
+	}
+	// Strip fragment
+	if idx := strings.Index(s, "#"); idx >= 0 {
+		s = s[:idx]
+	}
+	return s
 }

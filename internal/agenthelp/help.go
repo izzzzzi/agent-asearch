@@ -104,6 +104,7 @@ Sources (needs tools): youtube (yt-dlp), twitter (twitter-cli)
 
 Prefer reading results in small chunks (--limit 20) to save tokens.
 Use --raw for piping: asearch results read -s SID --raw | head -50
-Use next_commands from JSON responses to continue workflows.`,
+Use next_commands from JSON responses to continue workflows.
+Cross-source duplicates are automatically removed by normalized URL.`,
 	}
 }

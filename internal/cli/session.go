@@ -148,7 +148,12 @@ Browser auth (one-time):
   Prefer --limit 20 for compact JSON.
   Filter before reading: asearch results filter -s SID --source reddit
   Pipe with --raw: asearch results read -s SID --raw | head -50
-  Always close sessions: asearch session close -s SID`
+  Always close sessions: asearch session close -s SID
+
+== DEDUPLICATION ==
+  Cross-source duplicates are automatically removed by normalized URL.
+  First occurrence wins — earlier backends in the chain have priority.
+  Same URL on Reddit + HN + web = 1 result, first source listed.`
 			fmt.Fprintln(cmd.OutOrStdout(), prompt)
 			return nil
 		},
