@@ -1,45 +1,34 @@
 package search
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"os/exec"
+	"time"
 )
 
 type TwitterBackend struct{}
 
-func (b *TwitterBackend) Name() Source     { return SourceTwitter }
-func (b *TwitterBackend) Available() bool   { return true }
+func (b *TwitterBackend) Name() Source   { return SourceTwitter }
+func (b *TwitterBackend) Available() bool { return true }
 
 func (b *TwitterBackend) Search(query string, limit int) ([]Result, error) {
-	// 1. Try twitter-cli first (full-featured)
-	if _, err := exec.LookPath("twitter"); err == nil {
-		results, err := twitterCLI(query, limit)
-		if err == nil && len(results) > 0 {
-			return results, nil
-		}
-	}
-
-	// 2. Cookie file exists — guide user to use twitter-cli
-	if _, err := os.Stat(os.ExpandEnv("$HOME/.asearch/twitter-cookies.txt")); err == nil {
+	if _, err := exec.LookPath("twitter"); err != nil {
 		return nil, fmt.Errorf(
-			"twitter cookies found. Install twitter-cli to use them:\n"+
-				"  pipx install twitter-cli && twitter login",
+			"twitter search needs twitter-cli.\n"+
+				"Install: pipx install twitter-cli\n"+
+				"Then run: twitter login  (opens browser once)",
 		)
 	}
 
-	return nil, fmt.Errorf(
-		"twitter search needs auth:\n"+
-			"  pipx install twitter-cli && twitter login",
-	)
-}
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	defer cancel()
 
-func twitterCLI(query string, limit int) ([]Result, error) {
-	cmd := exec.Command("twitter", "search", query, "-n", fmt.Sprint(limit), "--json")
+	cmd := exec.CommandContext(ctx, "twitter", "search", query, "-n", fmt.Sprint(limit), "--json")
 	out, err := cmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("twitter-cli: %w", err)
+		return nil, fmt.Errorf("twitter-cli failed (run in terminal: twitter login): %w", err)
 	}
 
 	var tweets []struct {
