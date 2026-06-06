@@ -68,6 +68,12 @@ func Search(req SearchRequest) (*SearchResult, error) {
 	allBackends := []Backend{
 		&TavilyBackend{},
 		&SearXNGBackend{},
+		&SerperBackend{},
+		&PerplexityBackend{},
+		&SerpAPIBackend{},
+		&YouBackend{},
+		&FirecrawlBackend{},
+		&ParallelBackend{},
 		&BraveBackend{},
 		&ExaBackend{},
 		&WebBackend{},

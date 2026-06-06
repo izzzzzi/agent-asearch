@@ -17,76 +17,77 @@ func (b *WebBackend) Name() Source   { return SourceWeb }
 func (b *WebBackend) Available() bool { return true }
 
 func (b *WebBackend) Search(query string, limit int) ([]Result, error) {
-	// 1. SearXNG — self-hosted, zero cost, unlimited
+	// 0. SearXNG — self-hosted, zero cost, unlimited
 	if os.Getenv("ASEARCH_SEARXNG_URL") != "" {
-		sb := &SearXNGBackend{}
-		results, err := sb.Search(query, limit)
-		if err == nil && len(results) > 0 {
-			for i := range results {
-				results[i].Source = SourceWeb
-			}
-			return results, nil
-		}
+		if results := runBackend(&SearXNGBackend{}, query, limit); results != nil { return results, nil }
 	}
-
-	// 2. Tavily — best AI quality
+	// 1. Tavily — best AI quality
 	if os.Getenv("TAVILY_API_KEY") != "" {
-		tb := &TavilyBackend{}
-		results, err := tb.Search(query, limit)
-		if err == nil && len(results) > 0 {
-			for i := range results {
-				results[i].Source = SourceWeb
-			}
-			return results, nil
-		}
+		if results := runBackend(&TavilyBackend{}, query, limit); results != nil { return results, nil }
 	}
-
-	// 2. Brave Search — 35B-page index, 2000 free/month
-	if os.Getenv("BRAVE_API_KEY") != "" {
-		bb := &BraveBackend{}
-		results, err := bb.Search(query, limit)
-		if err == nil && len(results) > 0 {
-			for i := range results {
-				results[i].Source = SourceWeb
-			}
-			return results, nil
-		}
+	// 2. Perplexity — AI answers with citations
+	if os.Getenv("PERPLEXITY_API_KEY") != "" {
+		if results := runBackend(&PerplexityBackend{}, query, limit); results != nil { return results, nil }
 	}
-
 	// 3. Exa — neural/semantic search
 	if os.Getenv("EXA_API_KEY") != "" {
-		eb := &ExaBackend{}
-		results, err := eb.Search(query, limit)
-		if err == nil && len(results) > 0 {
-			for i := range results {
-				results[i].Source = SourceWeb
-			}
-			return results, nil
-		}
+		if results := runBackend(&ExaBackend{}, query, limit); results != nil { return results, nil }
+	}
+	// 4. Brave Search — 35B-page index
+	if os.Getenv("BRAVE_API_KEY") != "" {
+		if results := runBackend(&BraveBackend{}, query, limit); results != nil { return results, nil }
+	}
+	// 5. Serper — Google SERP
+	if os.Getenv("SERPER_API_KEY") != "" {
+		if results := runBackend(&SerperBackend{}, query, limit); results != nil { return results, nil }
+	}
+	// 6. SerpAPI — 40+ search engines
+	if os.Getenv("SERPAPI_API_KEY") != "" {
+		if results := runBackend(&SerpAPIBackend{}, query, limit); results != nil { return results, nil }
+	}
+	// 7. You.com
+	if os.Getenv("YOU_API_KEY") != "" {
+		if results := runBackend(&YouBackend{}, query, limit); results != nil { return results, nil }
+	}
+	// 8. Firecrawl — JS rendering
+	if os.Getenv("FIRECRAWL_API_KEY") != "" {
+		if results := runBackend(&FirecrawlBackend{}, query, limit); results != nil { return results, nil }
+	}
+	// 9. Parallel
+	if os.Getenv("PARALLEL_API_KEY") != "" {
+		if results := runBackend(&ParallelBackend{}, query, limit); results != nil { return results, nil }
 	}
 
-	// 4. SearXNG — self-hosted
-	if os.Getenv("ASEARCH_SEARXNG_URL") != "" {
-		results, err := searchSearXNG(os.Getenv("ASEARCH_SEARXNG_URL"), query, limit)
-		if err == nil && len(results) > 0 {
-			return results, nil
-		}
-	}
-
-	// 5. Clear guidance
+	// 10. Clear guidance
 	return nil, fmt.Errorf(
 		"web search needs a backend. Options (pick one):\n"+
-			"  • SearXNG (best):    docker run -d -p 8080:8080 searxng/searxng\n"+
-			"                        export ASEARCH_SEARXNG_URL=http://localhost:8080\n"+
-			"  • Tavily (AI):       export TAVILY_API_KEY=\"tvly-...\"  (free tier at tavily.com)\n"+
-			"  • Exa (semantic):    export EXA_API_KEY=\"...\"           (free tier at exa.ai)\n"+
-			"  • Brave Search:      export BRAVE_API_KEY=\"BSA...\"     (2000 free/month)\n"+
-			"  Or use --source searxng|tavily|exa directly",
+			"  • SearXNG (unlimited): docker run -d searxng/searxng && export ASEARCH_SEARXNG_URL=...\n"+
+			"  • Tavily (AI answers): export TAVILY_API_KEY=...    (free tier)\n"+
+			"  • Perplexity (citations): export PERPLEXITY_API_KEY=...\n"+
+			"  • Exa (semantic):        export EXA_API_KEY=...          (free tier)\n"+
+			"  • Brave (35B index):     export BRAVE_API_KEY=...       (2000 free/mo)\n"+
+			"  • Serper (Google SERP):  export SERPER_API_KEY=...      (2500 free/mo)\n"+
+			"  • SerpAPI (40+ engines): export SERPAPI_API_KEY=...     (100 free/mo)\n"+
+			"  • You.com:               export YOU_API_KEY=...           (free tier)\n"+
+			"  • Firecrawl (JS pages):  export FIRECRAWL_API_KEY=...    (500 free/mo)\n"+
+			"  • Parallel:              export PARALLEL_API_KEY=...\n"+
+			"\nAll providers are optional — just set the env var for the one you want.",
 	)
 }
 
 func braveSearch(query string, limit int) ([]Result, error) {
 	return nil, fmt.Errorf("brave search: use BraveBackend directly")
+}
+
+func runBackend(b Backend, query string, limit int) []Result {
+	results, err := b.Search(query, limit)
+	if err != nil || len(results) == 0 {
+		return nil
+	}
+	for i := range results {
+		results[i].Source = SourceWeb
+	}
+	return results
 }
 
 func searchSearXNG(baseURL string, query string, limit int) ([]Result, error) {

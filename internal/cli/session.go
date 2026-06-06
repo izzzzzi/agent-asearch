@@ -112,9 +112,9 @@ Check available tools: asearch doctor
 List sessions: asearch session list
 Always close sessions: asearch session close -s SID
 
-Sources (zero-config): searxng (docker run searxng/searxng), web (auto-delegate), hn, reddit, github, jina
-Sources (needs API key): tavily (TAVILY_API_KEY), exa (EXA_API_KEY), brave (BRAVE_API_KEY)
-Sources (needs tools): youtube (yt-dlp), twitter (twitter-cli)
+Sources (zero-config): searxng (docker), web (auto-delegate, 10 API providers), hn, reddit, github, jina
+API providers (set any env var): TAVILY_API_KEY, PERPLEXITY_API_KEY, EXA_API_KEY, BRAVE_API_KEY, SERPER_API_KEY, SERPAPI_API_KEY, YOU_API_KEY, FIRECRAWL_API_KEY, PARALLEL_API_KEY
+CLI tools (install once): youtube (yt-dlp), twitter (twitter-cli)
 
 For zero-cost unlimited search, start SearXNG:
   docker run -d -p 8080:8080 searxng/searxng && export ASEARCH_SEARXNG_URL=http://localhost:8080
@@ -144,8 +144,14 @@ func newDoctorCommand() *cobra.Command {
 			checks := []check{
 				{Name: "searxng", Available: os.Getenv("ASEARCH_SEARXNG_URL") != "", Tool: "searxng", Note: "Self-hosted meta-search, zero cost, no limits; docker run searxng/searxng"},
 				{Name: "tavily", Available: tavilyAvailable(), Tool: "tavily", Note: "AI-optimized search; set TAVILY_API_KEY (free tier at tavily.com)"},
-				{Name: "brave", Available: os.Getenv("BRAVE_API_KEY") != "", Tool: "brave", Note: "35B-page index, 2000 free/month; set BRAVE_API_KEY (brave.com/search/api)"},
+				{Name: "perplexity", Available: os.Getenv("PERPLEXITY_API_KEY") != "", Tool: "perplexity", Note: "AI answers with citations; set PERPLEXITY_API_KEY"},
 				{Name: "exa", Available: os.Getenv("EXA_API_KEY") != "", Tool: "exa", Note: "Neural/semantic search; set EXA_API_KEY (exa.ai)"},
+				{Name: "brave", Available: os.Getenv("BRAVE_API_KEY") != "", Tool: "brave", Note: "35B-page index, 2000 free/month; set BRAVE_API_KEY (brave.com/search/api)"},
+				{Name: "serper", Available: os.Getenv("SERPER_API_KEY") != "", Tool: "serper", Note: "Google SERP; set SERPER_API_KEY (2500 free/month at serper.dev)"},
+				{Name: "serpapi", Available: os.Getenv("SERPAPI_API_KEY") != "", Tool: "serpapi", Note: "40+ search engines; set SERPAPI_API_KEY (100 free/month at serpapi.com)"},
+				{Name: "you", Available: os.Getenv("YOU_API_KEY") != "", Tool: "you.com", Note: "You.com web search; set YOU_API_KEY"},
+				{Name: "firecrawl", Available: os.Getenv("FIRECRAWL_API_KEY") != "", Tool: "firecrawl", Note: "JS-rendered scraping; set FIRECRAWL_API_KEY (500 free/month)"},
+				{Name: "parallel", Available: os.Getenv("PARALLEL_API_KEY") != "", Tool: "parallel", Note: "Parallel.ai search; set PARALLEL_API_KEY"},
 				{Name: "jina", Available: true, Tool: "jina", Note: "URL-to-markdown reader; set JINA_API_KEY for higher rate limits (jina.ai)"},
 				{Name: "web", Available: true, Note: "DuckDuckGo Lite (auto-delegates to tavily/brave/exa if keys set)"},
 				{Name: "reddit", Available: true, Note: "public JSON API"},
