@@ -3,7 +3,7 @@ version: 2
 project_name: agent-asearch
 builds:
   - id: asearch
-    main: github.com/izzzzzi/agent-asearch/cmd/asearch
+    main: ./cmd/asearch/main.go
     binary: asearch
     env:
       - CGO_ENABLED=0
