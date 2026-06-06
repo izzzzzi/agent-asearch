@@ -2,7 +2,9 @@
 version: 2
 project_name: agent-asearch
 builds:
-  - main: ./cmd/asearch
+  - id: asearch
+    main: .
+    dir: cmd/asearch
     binary: asearch
     env:
       - CGO_ENABLED=0
