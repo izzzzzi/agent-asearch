@@ -3,130 +3,223 @@ package search
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
+
+	"github.com/izzzzzi/agent-asearch/internal/htmlq"
 )
 
-// WebBackend delegates to the best available web search API.
-// Priority: SearXNG (self-hosted, no limits) > Tavily > Exa > Brave > error.
+// WebBackend scrapes search engines directly using stdlib HTML parser.
+// Priority: SearXNG > DDG > Bing > Wikipedia > error.
 type WebBackend struct{}
 
 func (b *WebBackend) Name() Source   { return SourceWeb }
 func (b *WebBackend) Available() bool { return true }
 
 func (b *WebBackend) Search(query string, limit int) ([]Result, error) {
-	// 0. SearXNG — self-hosted, zero cost, unlimited
+	// 1. SearXNG — if configured (self-hosted)
 	if os.Getenv("ASEARCH_SEARXNG_URL") != "" {
-		if results := runBackend(&SearXNGBackend{}, query, limit); results != nil { return results, nil }
-	}
-	// 1. Tavily — best AI quality
-	if os.Getenv("TAVILY_API_KEY") != "" {
-		if results := runBackend(&TavilyBackend{}, query, limit); results != nil { return results, nil }
-	}
-	// 2. Perplexity — AI answers with citations
-	if os.Getenv("PERPLEXITY_API_KEY") != "" {
-		if results := runBackend(&PerplexityBackend{}, query, limit); results != nil { return results, nil }
-	}
-	// 3. Exa — neural/semantic search
-	if os.Getenv("EXA_API_KEY") != "" {
-		if results := runBackend(&ExaBackend{}, query, limit); results != nil { return results, nil }
-	}
-	// 4. Brave Search — 35B-page index
-	if os.Getenv("BRAVE_API_KEY") != "" {
-		if results := runBackend(&BraveBackend{}, query, limit); results != nil { return results, nil }
-	}
-	// 5. Serper — Google SERP
-	if os.Getenv("SERPER_API_KEY") != "" {
-		if results := runBackend(&SerperBackend{}, query, limit); results != nil { return results, nil }
-	}
-	// 6. SerpAPI — 40+ search engines
-	if os.Getenv("SERPAPI_API_KEY") != "" {
-		if results := runBackend(&SerpAPIBackend{}, query, limit); results != nil { return results, nil }
-	}
-	// 7. You.com
-	if os.Getenv("YOU_API_KEY") != "" {
-		if results := runBackend(&YouBackend{}, query, limit); results != nil { return results, nil }
-	}
-	// 8. Firecrawl — JS rendering
-	if os.Getenv("FIRECRAWL_API_KEY") != "" {
-		if results := runBackend(&FirecrawlBackend{}, query, limit); results != nil { return results, nil }
-	}
-	// 9. Parallel
-	if os.Getenv("PARALLEL_API_KEY") != "" {
-		if results := runBackend(&ParallelBackend{}, query, limit); results != nil { return results, nil }
+		if r := tryBackend(&SearXNGBackend{}, query, limit); r != nil { return r, nil }
 	}
 
-	// 10. Clear guidance
+	// 2. DuckDuckGo HTML — zero config, no JS
+	if r := ddgSearch(query, limit); r != nil { return r, nil }
+
+	// 3. Wikipedia API
+	if r := wikiSearch(query, limit); r != nil { return r, nil }
+
+	// 4. Bing HTML
+	if r := bingSearch(query, limit); r != nil { return r, nil }
+
 	return nil, fmt.Errorf(
-		"web search needs a backend. Options (pick one):\n"+
-			"  • SearXNG (unlimited): docker run -d searxng/searxng && export ASEARCH_SEARXNG_URL=...\n"+
-			"  • Tavily (AI answers): export TAVILY_API_KEY=...    (free tier)\n"+
-			"  • Perplexity (citations): export PERPLEXITY_API_KEY=...\n"+
-			"  • Exa (semantic):        export EXA_API_KEY=...          (free tier)\n"+
-			"  • Brave (35B index):     export BRAVE_API_KEY=...       (2000 free/mo)\n"+
-			"  • Serper (Google SERP):  export SERPER_API_KEY=...      (2500 free/mo)\n"+
-			"  • SerpAPI (40+ engines): export SERPAPI_API_KEY=...     (100 free/mo)\n"+
-			"  • You.com:               export YOU_API_KEY=...           (free tier)\n"+
-			"  • Firecrawl (JS pages):  export FIRECRAWL_API_KEY=...    (500 free/mo)\n"+
-			"  • Parallel:              export PARALLEL_API_KEY=...\n"+
-			"\nAll providers are optional — just set the env var for the one you want.",
+		"web search unavailable without API key.\n"+
+			"  Set any: TAVILY_API_KEY, EXA_API_KEY, BRAVE_API_KEY, SERPER_API_KEY\n"+
+			"  Or self-host SearXNG: docker run -d searxng/searxng + ASEARCH_SEARXNG_URL",
 	)
 }
 
-func braveSearch(query string, limit int) ([]Result, error) {
-	return nil, fmt.Errorf("brave search: use BraveBackend directly")
+func tryBackend(b Backend, query string, limit int) []Result {
+	r, err := b.Search(query, limit)
+	if err != nil || len(r) == 0 { return nil }
+	for i := range r { r[i].Source = SourceWeb }
+	return r
 }
 
-func runBackend(b Backend, query string, limit int) []Result {
-	results, err := b.Search(query, limit)
-	if err != nil || len(results) == 0 {
-		return nil
+// ── DuckDuckGo HTML ────────────────────────────────────────────────────
+
+func ddgSearch(query string, limit int) []Result {
+	u := fmt.Sprintf("https://html.duckduckgo.com/html/?q=%s", url.QueryEscape(query))
+	body := httpGet(u)
+	if body == "" { return nil }
+
+	var results []Result
+	for _, item := range htmlq.FindAll(body, "div", "result") {
+		if len(results) >= limit { break }
+
+		// Extract title link
+		links := item.Find("a", "")
+		title, href := "", ""
+		for _, a := range links {
+			if strings.Contains(a.Attrs["class"], "result__a") {
+				title = a.Text
+				href = a.Attrs["href"]
+				// Decode DDG redirect URL
+				if strings.Contains(href, "uddg=") {
+					for _, p := range strings.Split(href, "?") {
+						for _, param := range strings.Split(p, "&") {
+							if strings.HasPrefix(param, "uddg=") {
+								if decoded, err := url.QueryUnescape(param[5:]); err == nil {
+									href = decoded
+								}
+							}
+						}
+					}
+				}
+				break
+			}
+		}
+		if title == "" { continue }
+
+		// Extract snippet
+		snippet := ""
+		for _, a := range item.Find("a", "result__snippet") {
+			snippet = a.Text
+			break
+		}
+		if snippet == "" {
+			for _, s := range item.Find("span", "result__snippet") {
+				snippet = s.Text
+				break
+			}
+		}
+
+		results = append(results, Result{
+			Source: SourceWeb, Title: title, URL: href, Snippet: snippet,
+			Engagement: "via DuckDuckGo",
+		})
 	}
-	for i := range results {
-		results[i].Source = SourceWeb
+
+	if len(results) == 0 {
+		// Try alternative: old-style result links
+		for _, a := range htmlq.FindAll(body, "a", "result-link") {
+			if len(results) >= limit { break }
+			results = append(results, Result{
+				Source: SourceWeb, Title: a.Text, URL: a.Attrs["href"],
+				Engagement: "via DuckDuckGo",
+			})
+		}
+	}
+	if len(results) == 0 { return nil }
+	return results
+}
+
+// ── Wikipedia API ───────────────────────────────────────────────────────
+
+func wikiSearch(query string, limit int) []Result {
+	u := fmt.Sprintf("https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=%s&format=json&srlimit=%d",
+		url.QueryEscape(query), limit)
+	resp, err := http.Get(u)
+	if err != nil { return nil }
+	defer resp.Body.Close()
+
+	var api struct {
+		Query struct {
+			Search []struct {
+				Title   string `json:"title"`
+				Snippet string `json:"snippet"`
+				PageID  int    `json:"pageid"`
+			} `json:"search"`
+		} `json:"query"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&api); err != nil { return nil }
+
+	var results []Result
+	for _, s := range api.Query.Search {
+		// Strip HTML from snippet
+		snip := strings.ReplaceAll(s.Snippet, "&amp;", "&")
+		snip = strings.ReplaceAll(snip, "&lt;", "<")
+		snip = strings.ReplaceAll(snip, "&gt;", ">")
+		snip = stripHTML(snip)
+		if len(snip) > 200 { snip = snip[:200] + "..." }
+		results = append(results, Result{
+			Source: SourceWeb, Title: s.Title,
+			URL: fmt.Sprintf("https://en.wikipedia.org/wiki/%s", url.PathEscape(s.Title)),
+			Snippet: snip,
+			Engagement: "via Wikipedia",
+		})
 	}
 	return results
 }
 
-func searchSearXNG(baseURL string, query string, limit int) ([]Result, error) {
-	client := &http.Client{Timeout: 10 * time.Second}
-	params := url.Values{}
-	params.Set("q", query)
-	params.Set("format", "json")
-	resp, err := client.Get(baseURL + "/search?" + params.Encode())
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+// ── Bing HTML ───────────────────────────────────────────────────────────
 
-	var respData struct {
-		Results []struct {
-			Title   string `json:"title"`
-			URL     string `json:"url"`
-			Content string `json:"content"`
-		} `json:"results"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
-		return nil, err
-	}
+func bingSearch(query string, limit int) []Result {
+	u := fmt.Sprintf("https://www.bing.com/search?q=%s", url.QueryEscape(query))
+	body := httpGet(u)
+	if body == "" { return nil }
 
 	var results []Result
-	for i, r := range respData.Results {
-		if i >= limit {
-			break
+	for _, item := range htmlq.FindAll(body, "li", "b_algo") {
+		if len(results) >= limit { break }
+		// Find the title link
+		links := item.Find("a", "")
+		title, href := "", ""
+		for _, a := range links {
+			if h := a.Attrs["href"]; strings.HasPrefix(h, "http") {
+				title, href = a.Text, h
+				break
+			}
 		}
-		snippet := r.Content
-		if len(snippet) > 200 {
-			snippet = snippet[:200] + "..."
+		if title == "" { continue }
+		// Find description
+		snippet := ""
+		for _, p := range item.Find("p", "") {
+			if c := p.Attrs["class"]; c == "b_lineclamp2" || c == "b_algoSlug" {
+				snippet = p.Text
+				break
+			}
+		}
+		if snippet == "" {
+			for _, d := range item.Find("div", "b_caption") {
+				snippet = d.Text
+				break
+			}
 		}
 		results = append(results, Result{
-			Source:  SourceWeb,
-			Title:   r.Title,
-			URL:     r.URL,
-			Snippet: snippet,
+			Source: SourceWeb, Title: title, URL: href, Snippet: snippet,
+			Engagement: "via Bing",
 		})
 	}
-	return results, nil
+	return results
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────
+
+func httpGet(url string) string {
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36")
+	resp, err := client.Do(req)
+	if err != nil { return "" }
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 { return "" }
+	var buf strings.Builder
+	buf.Grow(100000)
+	io.Copy(&buf, resp.Body)
+	return buf.String()
+}
+
+func stripHTML(s string) string {
+	var b strings.Builder
+	inTag := false
+	for _, r := range s {
+		if r == '<' { inTag = true; continue }
+		if r == '>' { inTag = false; continue }
+		if !inTag { b.WriteRune(r) }
+	}
+	return strings.TrimSpace(b.String())
 }
