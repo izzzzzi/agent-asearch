@@ -17,6 +17,7 @@ func newOpenCommand() *cobra.Command {
 	var sources []string
 	var limit int
 	var crossRef bool
+	var synthMode bool
 
 	cmd := &cobra.Command{
 		Use:   "open --query QUERY [--source web,reddit,hn...]",
@@ -80,7 +81,9 @@ func newOpenCommand() *cobra.Command {
 			}
 
 			srcNames := sourceStrings(srcs)
-			return writeJSON(cmd, map[string]any{
+
+			// Build response
+			res := map[string]any{
 				"ok":      true,
 				"sid":     sid,
 				"session": name,
@@ -94,7 +97,20 @@ func newOpenCommand() *cobra.Command {
 					"close":    fmt.Sprintf("asearch session close -s %s", sid),
 					"list":     "asearch session list",
 				},
-			})
+			}
+
+			// Synth mode: inline results + synthesis prompt for the calling agent
+			if synthMode {
+				res["results"] = result.Results
+
+				// Build synthesis prompt
+				synthPrompt := buildSynthPrompt(query, srcNames, result.Total, crossRef)
+
+				nc := res["next_commands"].(map[string]string)
+				nc["synth"] = synthPrompt
+			}
+
+			return writeJSON(cmd, res)
 		},
 	}
 
@@ -103,6 +119,7 @@ func newOpenCommand() *cobra.Command {
 	cmd.Flags().IntVar(&limit, "limit", 50, "max results per source")
 	cmd.Flags().StringVarP(&name, "name", "n", "", "session name (default: derived from query)")
 	cmd.Flags().BoolVarP(&crossRef, "cross-ref", "x", false, "cross-reference results across sources")
+	cmd.Flags().BoolVar(&synthMode, "synth", false, "inline results + synthesis prompt for AI agents")
 
 	return cmd
 }
@@ -160,4 +177,31 @@ func sanitizeName(query string) string {
 		name = name[:32]
 	}
 	return name
+}
+
+// buildSynthPrompt creates a synthesis prompt for the calling AI agent.
+// The agent reads this from next_commands.synth and follows the instructions.
+func buildSynthPrompt(query string, sources []string, total int, crossRef bool) string {
+	srcList := strings.Join(sources, " + ")
+	prompt := fmt.Sprintf(`You are an AI agent. Search results for "%s" are embedded above.
+
+Sources: %s (%d total)`, query, srcList, total)
+
+	if crossRef {
+		prompt += `
+Cross-references are enabled — some results have "related" field linking same entity across sources.`
+	}
+
+	prompt += `
+
+Produce a structured JSON report with these fields:
+1. "summary" — 2-3 sentence synthesis of key findings
+2. "key_entities" — [{name, type: "author"|"org"|"project", summary}]
+3. "timeline" — [{date, event, seq}] if date info is available
+4. "connections" — [{entity, sources: [...], seqs: [...], note}] — cross-platform findings about the same topic
+5. "top_results" — [{seq, reason}] — 3-5 most significant results
+
+Output ONLY valid JSON. No explanations.`
+
+	return prompt
 }
