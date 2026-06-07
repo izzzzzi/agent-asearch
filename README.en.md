@@ -79,6 +79,16 @@ asearch session close -s a1b2c3d4
 | **youtube** | 🔧 cookies | Save browser cookies to ~/.asearch/youtube-cookies.txt |
 | **twitter** | 🔧 | `pipx install twitter-cli` |
 
+## Optional OpenClaw X/Twitter handoff
+
+Keep `asearch` as the discovery step. If an agent needs account-scoped X/Twitter actions after search results, install [TweetClaw](https://github.com/Xquik-dev/tweetclaw) separately:
+
+```bash
+openclaw plugins install npm:@xquik/tweetclaw
+```
+
+Use it for reviewed workflows such as search tweet replies, follower export, user lookup, media upload and download, monitors, webhooks, direct messages, giveaway draws, and approval-gated post tweets or replies. Do not share `asearch` sessions or browser cookies with TweetClaw; configure the Xquik API key through the OpenClaw plugin settings.
+
 ## Commands
 
 - `asearch open --query Q --source SRC` — start a search session.
