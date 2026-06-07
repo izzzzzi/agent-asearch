@@ -83,6 +83,8 @@ asearch open --query "..." --source searxng
 |---------|-------------|
 | `asearch doctor` | Check all 18 providers — what's ready, what's not |
 | `asearch open --query Q --source SRC` | Start a search session |
+| `asearch open --query Q -x` | Cross-reference (tool by author) |
+| `asearch open --query Q --synth` | Inline results + agent synthesis prompt |
 | `asearch results read -s SID --seq N --limit M` | Paginated read |
 | `asearch results filter -s SID --source SRC` | Filter by source |
 | `asearch session list` | List sessions |

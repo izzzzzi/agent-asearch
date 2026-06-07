@@ -98,6 +98,10 @@ Filter by source: asearch results filter -s SID --source reddit
 Check available tools: asearch doctor | list sessions: asearch session list
 Always close sessions: asearch session close -s SID
 
+Cross-reference: add --cross-ref (-x) to search for "tool by author"
+Synthesis: add --synth to get inline results + next_commands.synth with agent synthesis prompt
+  When next_commands.synth is present, analyze the inline results and produce the requested JSON report
+
 Zero-config sources: web (DDG/Wikipedia/Bing), hn, reddit (cookies), github, jina
 Self-hosted: searxng (docker run searxng/searxng + ASEARCH_SEARXNG_URL)
 API keys (any one): tavily, exa, brave, serper, serpapi, you, firecrawl, parallel, perplexity

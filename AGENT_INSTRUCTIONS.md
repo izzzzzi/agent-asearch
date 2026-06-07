@@ -70,6 +70,8 @@ asearch open --query "..." --source searxng
 |---------|----------|
 | `asearch doctor` | Проверить все 16 провайдеров — какие готовы, какие нет |
 | `asearch open --query Q --source SRC` | Запустить поисковую сессию |
+| `asearch open --query Q -x` | С перекрёстным поиском (tool by author) |
+| `asearch open --query Q --synth` | Inline результаты + промпт для синтеза агентом |
 | `asearch results read -s SID --seq N --limit M` | Пагинированное чтение |
 | `asearch results filter -s SID --source SRC` | Фильтр по источнику |
 | `asearch session list` | Список сессий |

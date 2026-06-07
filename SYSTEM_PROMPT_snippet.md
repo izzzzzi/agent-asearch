@@ -20,6 +20,8 @@ Check available backends with `asearch doctor`.
 Prefer reading results in small chunks (--limit 20) to save tokens.
 Use --raw for piping: asearch results read -s SID --raw | head -50.
 Use next_commands from JSON responses to continue workflows.
+Use --cross-ref (-x) to cross-reference results (e.g., "tool by author").
+Use --synth to get inline results + next_commands.synth — a synthesis prompt for the agent to analyze and produce structured JSON output.
 
 Never echo API keys in responses. Keep returned sid values between calls.
 Close sessions when done to free resources.

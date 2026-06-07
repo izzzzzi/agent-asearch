@@ -98,6 +98,8 @@ asearch session close -s a1b2c3d4
 ## Команды
 
 - `asearch open --query Q --source SRC` — запуск поисковой сессии.
+- `asearch open --query Q -x` — перекрёстный поиск (tool by author).
+- `asearch open --query Q --synth` — inline результаты + промпт для синтеза агентом.
 - `asearch results read -s SID --seq N --limit M` — пагинированное чтение.
 - `asearch results filter -s SID --source SRC` — фильтр по источнику.
 - `asearch session list|close|gc` — управление сессиями.
