@@ -2,9 +2,9 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 
+	"github.com/izzzzzi/agent-asearch/internal/config"
 	"github.com/izzzzzi/agent-asearch/internal/search"
 	"github.com/izzzzzi/agent-asearch/internal/session"
 	"github.com/izzzzzi/agent-asearch/internal/state"
@@ -176,16 +176,16 @@ func newDoctorCommand() *cobra.Command {
 				Note      string `json:"note,omitempty"`
 			}
 			checks := []check{
-				{Name: "searxng", Available: os.Getenv("ASEARCH_SEARXNG_URL") != "", Tool: "searxng", Note: "Self-hosted meta-search, zero cost, no limits; docker run searxng/searxng"},
+				{Name: "searxng", Available: config.GetKey("searxng") != "", Tool: "searxng", Note: "Self-hosted meta-search, zero cost, no limits; docker run searxng/searxng"},
 				{Name: "tavily", Available: tavilyAvailable(), Tool: "tavily", Note: "AI-optimized search; set TAVILY_API_KEY (free tier at tavily.com)"},
-				{Name: "perplexity", Available: os.Getenv("PERPLEXITY_API_KEY") != "", Tool: "perplexity", Note: "AI answers with citations; set PERPLEXITY_API_KEY"},
-				{Name: "exa", Available: os.Getenv("EXA_API_KEY") != "", Tool: "exa", Note: "Neural/semantic search; set EXA_API_KEY (exa.ai)"},
-				{Name: "brave", Available: os.Getenv("BRAVE_API_KEY") != "", Tool: "brave", Note: "35B-page index, 2000 free/month; set BRAVE_API_KEY (brave.com/search/api)"},
-				{Name: "serper", Available: os.Getenv("SERPER_API_KEY") != "", Tool: "serper", Note: "Google SERP; set SERPER_API_KEY (2500 free/month at serper.dev)"},
-				{Name: "serpapi", Available: os.Getenv("SERPAPI_API_KEY") != "", Tool: "serpapi", Note: "40+ search engines; set SERPAPI_API_KEY (100 free/month at serpapi.com)"},
-				{Name: "you", Available: os.Getenv("YOU_API_KEY") != "", Tool: "you.com", Note: "You.com web search; set YOU_API_KEY"},
-				{Name: "firecrawl", Available: os.Getenv("FIRECRAWL_API_KEY") != "", Tool: "firecrawl", Note: "JS-rendered scraping; set FIRECRAWL_API_KEY (500 free/month)"},
-				{Name: "parallel", Available: os.Getenv("PARALLEL_API_KEY") != "", Tool: "parallel", Note: "Parallel.ai search; set PARALLEL_API_KEY"},
+				{Name: "perplexity", Available: config.GetKey("perplexity") != "", Tool: "perplexity", Note: "AI answers with citations; set PERPLEXITY_API_KEY"},
+				{Name: "exa", Available: config.GetKey("exa") != "", Tool: "exa", Note: "Neural/semantic search; set EXA_API_KEY (exa.ai)"},
+				{Name: "brave", Available: config.GetKey("brave") != "", Tool: "brave", Note: "35B-page index, 2000 free/month; set BRAVE_API_KEY (brave.com/search/api)"},
+				{Name: "serper", Available: config.GetKey("serper") != "", Tool: "serper", Note: "Google SERP; set SERPER_API_KEY (2500 free/month at serper.dev)"},
+				{Name: "serpapi", Available: config.GetKey("serpapi") != "", Tool: "serpapi", Note: "40+ search engines; set SERPAPI_API_KEY (100 free/month at serpapi.com)"},
+				{Name: "you", Available: config.GetKey("you") != "", Tool: "you.com", Note: "You.com web search; set YOU_API_KEY"},
+				{Name: "firecrawl", Available: config.GetKey("firecrawl") != "", Tool: "firecrawl", Note: "JS-rendered scraping; set FIRECRAWL_API_KEY (500 free/month)"},
+				{Name: "parallel", Available: config.GetKey("parallel") != "", Tool: "parallel", Note: "Parallel.ai search; set PARALLEL_API_KEY"},
 				{Name: "jina", Available: true, Tool: "jina", Note: "URL-to-markdown reader; set JINA_API_KEY for higher rate limits (jina.ai)"},
 				{Name: "web", Available: true, Note: "DuckDuckGo Lite (auto-delegates to tavily/brave/exa if keys set)"},
 				{Name: "reddit", Available: true, Note: "Reddit JSON API (browse/read/info); needs cookies from browser"},
@@ -270,5 +270,5 @@ func newWebSearchCommand() *cobra.Command {
 }
 
 func tavilyAvailable() bool {
-	return os.Getenv("TAVILY_API_KEY") != ""
+	return config.GetKey("tavily") != ""
 }

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -13,11 +12,11 @@ type TavilyBackend struct{}
 
 func (b *TavilyBackend) Name() Source { return SourceTavily }
 func (b *TavilyBackend) Available() bool {
-	return os.Getenv("TAVILY_API_KEY") != ""
+	return apiKey("tavily") != ""
 }
 
 func (b *TavilyBackend) Search(query string, limit int) ([]Result, error) {
-	apiKey := os.Getenv("TAVILY_API_KEY")
+	apiKey := apiKey("tavily")
 	if apiKey == "" {
 		return nil, fmt.Errorf("TAVILY_API_KEY not set; get one at https://tavily.com")
 	}

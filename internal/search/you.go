@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 )
 
@@ -14,10 +13,10 @@ import (
 type YouBackend struct{}
 
 func (b *YouBackend) Name() Source { return SourceWeb }
-func (b *YouBackend) Available() bool   { return os.Getenv("YOU_API_KEY") != "" }
+func (b *YouBackend) Available() bool   { return apiKey("you") != "" }
 
 func (b *YouBackend) Search(query string, limit int) ([]Result, error) {
-	apiKey := os.Getenv("YOU_API_KEY")
+	apiKey := apiKey("you")
 	if apiKey == "" {
 		return nil, fmt.Errorf("YOU_API_KEY not set; get at https://you.com/api")
 	}

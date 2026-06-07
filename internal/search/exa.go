@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -15,11 +14,11 @@ type ExaBackend struct{}
 
 func (b *ExaBackend) Name() Source { return SourceWeb }
 func (b *ExaBackend) Available() bool {
-	return os.Getenv("EXA_API_KEY") != ""
+	return apiKey("exa") != ""
 }
 
 func (b *ExaBackend) Search(query string, limit int) ([]Result, error) {
-	apiKey := os.Getenv("EXA_API_KEY")
+	apiKey := apiKey("exa")
 	if apiKey == "" {
 		return nil, fmt.Errorf("EXA_API_KEY not set; get one at https://exa.ai")
 	}

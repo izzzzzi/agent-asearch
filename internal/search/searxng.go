@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -19,11 +18,11 @@ type SearXNGBackend struct{}
 
 func (b *SearXNGBackend) Name() Source { return SourceSearXNG }
 func (b *SearXNGBackend) Available() bool {
-	return os.Getenv("ASEARCH_SEARXNG_URL") != ""
+	return apiKey("searxng") != ""
 }
 
 func (b *SearXNGBackend) Search(query string, limit int) ([]Result, error) {
-	baseURL := os.Getenv("ASEARCH_SEARXNG_URL")
+	baseURL := apiKey("searxng")
 	if baseURL == "" {
 		return nil, fmt.Errorf(
 			"searxng: set ASEARCH_SEARXNG_URL or run locally:\n"+

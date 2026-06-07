@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -14,11 +13,11 @@ type BraveBackend struct{}
 
 func (b *BraveBackend) Name() Source { return SourceWeb }
 func (b *BraveBackend) Available() bool {
-	return os.Getenv("BRAVE_API_KEY") != ""
+	return apiKey("brave") != ""
 }
 
 func (b *BraveBackend) Search(query string, limit int) ([]Result, error) {
-	apiKey := os.Getenv("BRAVE_API_KEY")
+	apiKey := apiKey("brave")
 	if apiKey == "" {
 		return nil, fmt.Errorf("BRAVE_API_KEY not set; get one at https://brave.com/search/api/")
 	}

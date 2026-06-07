@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -14,10 +13,10 @@ import (
 type PerplexityBackend struct{}
 
 func (b *PerplexityBackend) Name() Source { return SourceWeb }
-func (b *PerplexityBackend) Available() bool   { return os.Getenv("PERPLEXITY_API_KEY") != "" }
+func (b *PerplexityBackend) Available() bool   { return apiKey("perplexity") != "" }
 
 func (b *PerplexityBackend) Search(query string, limit int) ([]Result, error) {
-	apiKey := os.Getenv("PERPLEXITY_API_KEY")
+	apiKey := apiKey("perplexity")
 	if apiKey == "" {
 		return nil, fmt.Errorf("PERPLEXITY_API_KEY not set; get at https://docs.perplexity.ai")
 	}

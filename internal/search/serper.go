@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -14,10 +13,10 @@ import (
 type SerperBackend struct{}
 
 func (b *SerperBackend) Name() Source { return SourceWeb }
-func (b *SerperBackend) Available() bool   { return os.Getenv("SERPER_API_KEY") != "" }
+func (b *SerperBackend) Available() bool   { return apiKey("serper") != "" }
 
 func (b *SerperBackend) Search(query string, limit int) ([]Result, error) {
-	apiKey := os.Getenv("SERPER_API_KEY")
+	apiKey := apiKey("serper")
 	if apiKey == "" {
 		return nil, fmt.Errorf("SERPER_API_KEY not set; get at https://serper.dev (2500 free/month)")
 	}

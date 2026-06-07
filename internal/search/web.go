@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
@@ -22,23 +21,28 @@ func (b *WebBackend) Available() bool { return true }
 
 func (b *WebBackend) Search(query string, limit int) ([]Result, error) {
 	// 1. SearXNG — if configured (self-hosted)
-	if os.Getenv("ASEARCH_SEARXNG_URL") != "" {
+	if apiKey("searxng") != "" {
 		if r := tryBackend(&SearXNGBackend{}, query, limit); r != nil { return r, nil }
 	}
 
-	// 2. DuckDuckGo HTML — zero config, no JS
+	// 2. API providers via config or env
+	// (providers check config.GetKey internally)
+
+	// 3. DuckDuckGo HTML — zero config, no JS
 	if r := ddgSearch(query, limit); r != nil { return r, nil }
 
-	// 3. Wikipedia API
+	// 4. Wikipedia API
 	if r := wikiSearch(query, limit); r != nil { return r, nil }
 
-	// 4. Bing HTML
+	// 5. Bing HTML
 	if r := bingSearch(query, limit); r != nil { return r, nil }
 
 	return nil, fmt.Errorf(
-		"web search unavailable without API key.\n"+
-			"  Set any: TAVILY_API_KEY, EXA_API_KEY, BRAVE_API_KEY, SERPER_API_KEY\n"+
-			"  Or self-host SearXNG: docker run -d searxng/searxng + ASEARCH_SEARXNG_URL",
+		"web search available via:\n"+
+			"  • Zero-config:  DuckDuckGo, Wikipedia, Bing (no key needed)\n"+
+			"  • API key:       asearch config set <provider> <key>\n"+
+			"                  or export TAVILY_API_KEY, EXA_API_KEY, etc.\n"+
+			"  • Self-hosted:   docker run searxng/searxng + ASEARCH_SEARXNG_URL",
 	)
 }
 

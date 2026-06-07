@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -14,10 +13,10 @@ import (
 type ParallelBackend struct{}
 
 func (b *ParallelBackend) Name() Source { return SourceWeb }
-func (b *ParallelBackend) Available() bool { return os.Getenv("PARALLEL_API_KEY") != "" }
+func (b *ParallelBackend) Available() bool { return apiKey("parallel") != "" }
 
 func (b *ParallelBackend) Search(query string, limit int) ([]Result, error) {
-	apiKey := os.Getenv("PARALLEL_API_KEY")
+	apiKey := apiKey("parallel")
 	if apiKey == "" {
 		return nil, fmt.Errorf("PARALLEL_API_KEY not set; get at https://parallel.ai")
 	}

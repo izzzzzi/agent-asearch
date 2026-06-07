@@ -14,10 +14,10 @@ import (
 type FirecrawlBackend struct{}
 
 func (b *FirecrawlBackend) Name() Source { return SourceWeb }
-func (b *FirecrawlBackend) Available() bool { return os.Getenv("FIRECRAWL_API_KEY") != "" }
+func (b *FirecrawlBackend) Available() bool { return apiKey("firecrawl") != "" }
 
 func (b *FirecrawlBackend) Search(query string, limit int) ([]Result, error) {
-	apiKey := os.Getenv("FIRECRAWL_API_KEY")
+	apiKey := apiKey("firecrawl")
 	if apiKey == "" {
 		return nil, fmt.Errorf("FIRECRAWL_API_KEY not set; get at https://firecrawl.dev (500 free/month)")
 	}

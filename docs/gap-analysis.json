@@ -1,0 +1,510 @@
+[
+
+  {
+    "category": "SOURCES",
+    "gap": "Perplexity Sonar Pro — AI-synthesized answer provider (search-cli, pi-websearch, last30days-skill)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1-2 days (new backend, Perplexity API is OpenAI-compatible)",
+    "notes": "Returns synthesized answers rather than raw results — useful for quick agent queries but breaks the raw-retrieval paradigm. Add as optional backend only."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Serper (Google SERP) — direct Google search results page provider (search-cli, pi-websearch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (standard REST API, new backend)",
+    "notes": "Cost leader at ~$0.30/1K queries. Valuable for price-sensitive users. Google freshness is often superior to Brave/Tavily for trending topics."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "SerpAPI — 40+ search engines via one provider (search-cli, pi-websearch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-3 days (larger API surface, many parameters)",
+    "notes": "Overlap with Serper for basic Google. Unique value is Yahoo, Yandex, eBay, etc. — fringe value for English-language agent search."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Firecrawl — JS-rendered web page scraping / crawling (search-cli, pi-websearch, ketch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-3 days (two use cases: scrape single URL + crawl site)",
+    "notes": "Overlaps with Jina reader (which asearch has). Firecrawl is stronger for JS-heavy SPAs. Could be added as alternative reader backend."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Browserless / Stealth scraper — cloud browser rendering, anti-bot scraping (search-cli)",
+    "severity": "niche",
+    "effort_estimate": "1-2 days (basic REST client)",
+    "notes": "Powerful but niche. Useful for scraping sites that block conventional scrapers. Low priority unless users specifically request blocked-site support."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Parallel AI, Linkup, Valyu, You.com — alternative search API providers (pi-websearch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1-2 days each (all are simple REST APIs)",
+    "notes": "Parallel is slowest (13.6s latency). Valyu and You.com are smaller players. Linkup has interesting agent-native design. Low urgency, moderate value for fallback diversity."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "xAI/Grok — X/Twitter search via Grok API (search-cli)",
+    "severity": "niche",
+    "effort_estimate": "1 day (OpenAI-compatible API)",
+    "notes": "X/Twitter is already supported via twitter-cli. Grok API may provide better X search but requires separate subscription. Low priority."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Code search — grep.app, Sourcegraph, GitHub code search backends (ketch)",
+    "severity": "must-have",
+    "effort_estimate": "3-5 days (3 backends + language filter + regex support)",
+    "notes": "**Highest-value missing source.** ketch's code search is its moat and directly relevant to asearch's target audience (coding agents). grep.app is free and needs no API key. Sourcegraph and GitHub code search are well-documented. This is the #1 gap to close."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Library/docs search — Context7 version-aware doc snippets (ketch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1-2 days (single API, straightforward)",
+    "notes": "Valuable for coding agents that need framework/library documentation. Could be paired with code search launch."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Chinese social platforms — Bilibili, Zhihu, Xiaohongshu, Douyin, Weibo, WeChat, V2EX, Xueqiu (Agent-Reach, AutoCLI)",
+    "severity": "niche",
+    "effort_estimate": "4-6 weeks (massive scope, requires CLI tools + auth per platform)",
+    "notes": "Huge effort for marginal return outside Chinese market. Agent-Reach requires per-platform CLI tools and cookie auth. Only pursue if asearch gains Chinese user base."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "TikTok — short-form video captions/comments (last30days-skill, AutoCLI)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-3 days (undocumented API or 3rd-party tool)",
+    "notes": "Growing relevance for trend analysis. last30days-skill proves it's doable. Moderate value."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Instagram Reels/Posts — Meta platform content (last30days-skill, AutoCLI)",
+    "severity": "niche",
+    "effort_estimate": "2-3 days (requires scraping or 3rd-party tool)",
+    "notes": "Limited API access. Niche use cases (brand monitoring, influencer research). Low priority."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "LinkedIn — professional network data (AutoCLI, Agent-Reach)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-3 days (scraper tool-based, similar to Agent-Reach approach)",
+    "notes": "Valuable for B2B research and recruiting use cases. Moderate effort, moderate value."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Polymarket — prediction market data (last30days-skill)",
+    "severity": "niche",
+    "effort_estimate": "1 day (public GraphQL API)",
+    "notes": "Interesting niche for serious investors/researchers. Low effort to add, narrow appeal."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "YouTube transcripts — full video transcription beyond just metadata (last30days-skill, Agent-Reach via yt-dlp)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (yt-dlp integration, already partial dependency)",
+    "notes": "asearch already supports YouTube via yt-dlp for metadata. Transcript extraction adds significant value for research/deep dives. YouTube is already listed as a 🔧 dependency — leverage it further."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Reddit comments — threaded comment data beyond just posts (last30days-skill, AutoCLI)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1-2 days (extend existing Reddit source to fetch comments via /r/sub/comments/id.json)",
+    "notes": "asearch already has Reddit source. Adding comment fetching is natural extension. High value for sentiment/discussion analysis."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "RSS/Atom feeds — feed-based content consumption (Agent-Reach)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1-2 days (feedparser-based, new source type)",
+    "notes": "Useful for monitoring blogs and news sites. Could be implemented via a generic feed reader backend."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Arxiv — academic paper search (AutoCLI)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (public REST API)",
+    "notes": "Valuable for research-oriented agents. Low effort, moderate value. Could pair with code search launch."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Wikipedia — encyclopedia content (AutoCLI)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (public REST API)",
+    "notes": "Low effort, moderate value for factual grounding. Many agents use Wikipedia as reliable baseline."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Podcast/audio content — Apple Podcasts, Xiaoyuzhou via Whisper transcription (AutoCLI, Agent-Reach)",
+    "severity": "niche",
+    "effort_estimate": "2-3 days (requires audio download + transcription pipeline)",
+    "notes": "Interesting but heavy. Whisper transcription is resource-intensive. Niche appeal."
+  },
+  {
+    "category": "SOURCES",
+    "gap": "Bluesky, Threads, Digg — emerging social platforms (last30days-skill)",
+    "severity": "niche",
+    "effort_estimate": "1-2 days each (public APIs or scraping)",
+    "notes": "Bluesky is gaining traction. Threads has no API. Digg is AI-focused. Low priority but Bluesky could become relevant."
+  },
+
+  {
+    "category": "FEATURES",
+    "gap": "Intent-specific search modes — academic, people, scholar, patents, images, places, deep, social (search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "3-5 days (depends on provider support — Serper/SerpAPI have specialized endpoints)",
+    "notes": "search-cli has 14 modes. Many map to Serper/SerpAPI special endpoints. Without those providers, modes are limited. Could implement subset via existing providers (e.g., 'news' mode via Brave/Tavily)."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Streaming results — results appear as providers respond (search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-3 days (refactor result collection to streaming)",
+    "notes": "Improves perceived performance. search-cli streams via tokio::JoinSet. Would require architectural change to asearch's parallel fetch → collect → return model."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Self-update command — `asearch update` pulls latest binary (search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (fetch latest release from GitHub)",
+    "notes": "Standard UX improvement. Low effort. asearch already has version command and npm wrapper. Self-update for Go binary downloaders would be nice."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Config file with subcommands — `asearch config set/get/show/check` (search-cli, ketch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-3 days (TOML/YAML/JSON config at ~/.asearch/config.*)",
+    "notes": "Currently asearch uses only env vars. Config file would enable persistent defaults and per-key settings. ketch has ~/.config/ketch/config.json. search-cli uses TOML. Valuable for session defaults, preferred source ordering, etc."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Auto-JSON detection — automatically output JSON when piped (search-cli)",
+    "severity": "must-have",
+    "effort_estimate": "<1 day (detect !isatty(stdout))",
+    "notes": "**Critical UX gap for agent usage.** Agents frequently pipe output. Currently asearch requires explicit --json flag or --raw mode. Auto-detection would make piped workflows seamless. Very low effort."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Semantic exit codes — 4 categories of exit codes for different outcomes (search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1-2 days (define exit code schema + implement)",
+    "notes": "Enables better agent error handling (distinguish 'no results' from 'API error' from 'timeout'). search-cli has 4 categories. Valuable for production agent workflows."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Shell completion generation — `asearch completion bash|zsh|fish` (AutoCLI, ketch, search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (cobra supports this natively in Go)",
+    "notes": "Since asearch uses cobra (based on commands), shell completion is likely straightforward. Improves developer UX for interactive use."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Multiple output formats — table, JSON, YAML, CSV, Markdown (AutoCLI, ketch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1-2 days (add format flag + renderers)",
+    "notes": "Currently asearch has JSON, raw, and terminal table. CSV and Markdown would be useful for data export. Moderate value."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "URL scraping for clean markdown — `asearch scrape <url>` extracts readable content (ketch)",
+    "severity": "must-have",
+    "effort_estimate": "1-2 days (Jina reader API is already available; add direct URL scrape command)",
+    "notes": "**High-frequency agent workflow**: agent finds URLs via search, then wants to read them. ketch has `--scrape` flag. asearch could use Jina reader (already integrated) or direct HTTP fetch with readability. This is a key gap — agents need to read pages, not just find them."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Website crawling — BFS/sitemap-based site-wide content extraction (ketch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "3-5 days (crawl orchestration, rate limiting, storage)",
+    "notes": "Valuable for documentation scraping and site auditing. ketch has background crawl with status tracking. Significant effort but high standalone value."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Background crawl execution with status tracking — list/status/stop (ketch)",
+    "severity": "niche",
+    "effort_estimate": "3-5 days (async execution, PID/process management)",
+    "notes": "Heavy feature. ketch's crawl system is sophisticated. Only useful if asearch adds crawling. Low priority."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Page cache with configurable TTL — avoids refetching same URLs (ketch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-3 days (cache layer on ~/.asearch/cache/, TTL config)",
+    "notes": "Performance optimization. ketch caches scraped pages for 72h by default. Valuable for repeated queries on same topics. asearch already has ~/.asearch storage — natural extension."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "CSS selector extraction — extract specific elements from pages (ketch)",
+    "severity": "niche",
+    "effort_estimate": "1 day (goquery library)",
+    "notes": "Power-user feature for targeted data extraction. Low effort, low general appeal."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Browser rendering for JS-rendered pages (ketch via headless Chrome, search-cli via Firecrawl)",
+    "severity": "niche",
+    "effort_estimate": "2-3 days (Chrome/chromedriver dependency or Firecrawl API)",
+    "notes": "Requires Chrome installation or Firecrawl API key. Niche but valuable for scraping modern SPAs."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "/llms.txt detection — auto-discover site's LLM optimization file (ketch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "<1 day (check /.well-known/llms.txt or /llms.txt)",
+    "notes": "Trending convention. Sites are adding llms.txt to guide AI consumption. Low effort, signal of modernity."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Auto-detect router that probes available API keys in priority order (pi-websearch)",
+    "severity": "must-have",
+    "effort_estimate": "1-2 days (key detection + priority ordering + fallback)",
+    "notes": "**Major UX improvement.** Currently asearch has hardcoded Tavily→Exa→Brave→SearXNG fallback. pi-websearch's resolveProvider() dynamically probes available keys. Would make key management seamless. High value."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Provider-specific parameters — e.g., Exa date filter, Brave freshness, domain include/exclude (pi-websearch, search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-4 days (per-provider option structs + CLI flags)",
+    "notes": "Power-user feature. search-cli has per-provider timeouts. pi-websearch passes provider-specific params through tool schemas. Valuable but adds CLI complexity."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "AI-driven narrative synthesis — auto-generate summaries/briefs from search results (last30days-skill)",
+    "severity": "nice-to-have",
+    "effort_estimate": "3-5 days (LLM integration, prompt engineering, output rendering)",
+    "notes": "last30days-skill's signature feature. Would require LLM API key as optional dependency. Valuable but shifts asearch's focus from 'search tool' to 'research assistant'."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Shareable HTML briefs — publication-ready offline artifacts (last30days-skill)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-3 days (HTML template, CSS, embedding)",
+    "notes": "Useful for sharing research results. last30days-skill generates dark-mode HTML files. Moderate effort, moderate value."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Entity resolution / pre-research — auto-discover handles, subreddits, hashtags before search (last30days-skill)",
+    "severity": "niche",
+    "effort_estimate": "3-5 days (entity extraction + search refinement)",
+    "notes": "Sophisticated feature from last30days-skill. AI-powered pre-search phase. Over-engineered for most use cases."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Trend monitoring with persistence — SQLite-backed watchlist with scheduled briefings (last30days-skill)",
+    "severity": "niche",
+    "effort_estimate": "5-10 days (SQLite schema, cron scheduling, briefing generation)",
+    "notes": "Major feature. Shifts asearch from CLI tool to daemon/service. Interesting but scope expansion."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Engagement-based scoring / humor scoring — rank results by social engagement (last30days-skill)",
+    "severity": "niche",
+    "effort_estimate": "2-3 days (scoring algorithm per source type)",
+    "notes": "Novel feature from last30days-skill. Adds personality but complex to implement well. Not essential."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "MCP server — expose asearch as Model Context Protocol server (Agent-Reach, general industry trend)",
+    "severity": "must-have",
+    "effort_estimate": "3-5 days (MCP protocol implementation in Go, tool definitions)",
+    "notes": "**High industry demand.** MCP is becoming the standard for LLM-tool integration. Agent-Reach has MCP integration. Exposing asearch as an MCP server would dramatically increase adoption in the AI agent ecosystem."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Cookie-based auth for blocked platforms (Agent-Reach)",
+    "severity": "niche",
+    "effort_estimate": "2-3 days (cookie file import + HTTP client configuration)",
+    "notes": "Useful for scraping rate-limited or login-walled sites. Low priority unless users request specific blocked sources."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Multi-language UI / i18n support (Agent-Reach)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-3 days (i18n framework, translations)",
+    "notes": "Agent-Reach supports Chinese, English, Japanese, Korean. asearch currently has Russian/English. Valuable if pursuing international users."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "AI-powered adapter generation — `asearch explore` discovers and generates new source adapters (AutoCLI)",
+    "severity": "niche",
+    "effort_estimate": "3-5 days (LLM-driven code generation + adapter registration)",
+    "notes": "AutoCLI's most ambitious feature. AI generates YAML adapters for new sites. Very complex, niche appeal."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "YAML pipeline definitions — declarative custom workflows (AutoCLI)",
+    "severity": "niche",
+    "effort_estimate": "5-10 days (pipeline interpreter, step execution, expression engine)",
+    "notes": "Powerful but massive scope. Would make asearch a general-purpose scraping framework. Not recommended."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Write operations — post, reply, like, follow on social platforms (AutoCLI)",
+    "severity": "niche",
+    "effort_estimate": "varies per platform, 5-15 days total",
+    "notes": "AutoCLI can write to social media. This is a fundamentally different product direction from asearch's read-only search focus."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Desktop app control — control Cursor, Codex, ChatGPT, Notion, Discord (AutoCLI)",
+    "severity": "niche",
+    "effort_estimate": "5-10 days per app (Chrome extension + automation)",
+    "notes": "Interesting but well outside asearch's scope. AutoCLI uses Chrome extension for desktop control."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "External CLI passthrough — run `asearch gh issue list` wrapping `gh` (AutoCLI)",
+    "severity": "niche",
+    "effort_estimate": "2-3 days (command passthrough mechanism)",
+    "notes": "Neat but blurs product boundaries. asearch should focus on search, not generic CLI passthrough."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Homebrew formula — `brew install agent-asearch` for macOS users (ketch, search-cli)",
+    "severity": "must-have",
+    "effort_estimate": "1 day (write Homebrew formula, submit tap)",
+    "notes": "**Significant adoption blocker.** macOS users expect `brew install`. ketch and search-cli both have Homebrew. Currently only npm install and manual binary download. High impact, low effort."
+  },
+  {
+    "category": "FEATURES",
+    "gap": "Regex-based intent classification — auto-detect search intent from query (search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1-2 days (regex patterns + source routing)",
+    "notes": "search-cli classifies queries to select best provider/source. Could improve asearch's default source selection. Moderate value."
+  },
+
+  {
+    "category": "ARCHITECTURE",
+    "gap": "Per-provider timeout and retry configuration (search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1-2 days (configurable timeout per backend, retry policy)",
+    "notes": "search-cli has per-provider timeouts using tokio::JoinSet. Improves resilience when one provider is slow. Moderate value for production reliability."
+  },
+  {
+    "category": "ARCHITECTURE",
+    "gap": "URL dedup with normalization across providers (search-cli)",
+    "severity": "must-have",
+    "effort_estimate": "1 day (URL normalization + hash set dedup)",
+    "notes": "**Important quality improvement.** When searching multiple providers, the same result often appears. search-cli deduplicates by normalized URL. Helps reduce token waste in LLM contexts. Low effort."
+  },
+  {
+    "category": "ARCHITECTURE",
+    "gap": "Provider fallback chain — try providers in priority order with automatic fallback (search-cli's steal→jina→firecrawl→browserless model)",
+    "severity": "must-have",
+    "effort_estimate": "2-3 days (fallback mechanism + health check per provider)",
+    "notes": "**Critical reliability improvement.** search-cli's 'steal' mode tries 4 providers in sequence with fallback. asearch currently has basic auto-delegation but no structured fallback with timeouts. Would make searches more reliable."
+  },
+  {
+    "category": "ARCHITECTURE",
+    "gap": "Modular package-per-provider architecture (pi-websearch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "3-5 days (extract each backend into separate package/module, core interface)",
+    "notes": "pi-websearch has monorepo with core + individual provider packages. Improves maintainability and enables third-party provider packages. Low immediate user value but good engineering practice."
+  },
+  {
+    "category": "ARCHITECTURE",
+    "gap": "Compile-time embedded adapters — sources compiled into binary, zero runtime discovery (AutoCLI, ketch)",
+    "severity": "informational",
+    "effort_estimate": "N/A (asearch already does this)",
+    "notes": "asearch already compiles sources into Go binary. No gap here — this is an asearch strength inherited from Go's static compilation."
+  },
+  {
+    "category": "ARCHITECTURE",
+    "gap": "Page cache with TTL and configurable expiry (ketch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-3 days (BoltDB or file-based cache in ~/.asearch/cache/)",
+    "notes": "ketch caches scraped pages for 72h by default. asearch already stores sessions locally — adding page caching is natural extension. Reduces API costs and improves latency."
+  },
+  {
+    "category": "ARCHITECTURE",
+    "gap": "Background/async execution with job tracking (ketch)",
+    "severity": "niche",
+    "effort_estimate": "5-7 days (job manager, PID tracking, status reporting)",
+    "notes": "ketch runs crawls in background with list/status/stop commands. Heavy feature. Only relevant if asearch adds crawling."
+  },
+  {
+    "category": "ARCHITECTURE",
+    "gap": "Pluggable AI post-processing pipeline — entity resolution, synthesis, scoring as modular stages (last30days-skill)",
+    "severity": "nice-to-have",
+    "effort_estimate": "5-10 days (pipeline architecture, stage interface, LLM integration)",
+    "notes": "Sophisticated architecture. last30days-skill chains search → entity resolution → scoring → synthesis → briefing. Valuable but shifts product scope toward full research assistant."
+  },
+
+  {
+    "category": "UX",
+    "gap": "Colored terminal table output — human-readable colored results (search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (tablewriter library + color)",
+    "notes": "Improves interactive CLI experience. asearch currently has terminal output but without color. Low effort, noticeable polish improvement."
+  },
+  {
+    "category": "UX",
+    "gap": "Streaming result display — results appear as they arrive (search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "2-3 days (refactor to streaming collection)",
+    "notes": "Better perceived performance. search-cli shows results progressively. asearch currently waits for all providers then returns. Moderate effort."
+  },
+  {
+    "category": "UX",
+    "gap": "Auto-JSON mode when piped (search-cli)",
+    "severity": "must-have",
+    "effort_estimate": "<1 day (detect pipe)",
+    "notes": "**Critical for agent workflows.** When piped to jq or another command, auto-switch to JSON. Currently requires explicit flag. Very low effort, very high impact."
+  },
+  {
+    "category": "UX",
+    "gap": "Shell completion (AutoCLI, ketch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (cobra built-in)",
+    "notes": "Low effort, noticeable polish for interactive users."
+  },
+  {
+    "category": "UX",
+    "gap": "--dry-run mode — show what would be searched without executing (Agent-Reach)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (dry-run flag, preview sources/backends)",
+    "notes": "Useful for debugging. Agent-Reach has --dry-run install mode. Demonstrates which sources/keys would be used."
+  },
+  {
+    "category": "UX",
+    "gap": "--safe mode — strict/read-only operations (Agent-Reach)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (safe mode flag, restrict to read-only operations)",
+    "notes": "Good for CI/CD and production agent use. Prevents accidental destructive operations."
+  },
+  {
+    "category": "UX",
+    "gap": "Multi-format output — --format json|yaml|csv|md|table (AutoCLI, ketch)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1-2 days (format flag + output renderers)",
+    "notes": "Improves interoperability with different workflows. AutoCLI has 5 output formats. Moderate value."
+  },
+  {
+    "category": "UX",
+    "gap": "Progress/spinner during search execution (ketch, search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (spinner library)",
+    "notes": "Polishes interactive experience. Shows which sources are being queried. Low effort."
+  },
+  {
+    "category": "UX",
+    "gap": "Config file management — `config set default-source hn` (ketch, search-cli)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1-2 days (config subcommand, file I/O)",
+    "notes": "Enables persistent user preferences. ketch has `ketch config set/get/init`. Low effort, high convenience value."
+  },
+  {
+    "category": "UX",
+    "gap": "ELI5 / plain language rewrite mode (last30days-skill)",
+    "severity": "niche",
+    "effort_estimate": "1-2 days (LLM prompt for simplification)",
+    "notes": "Charming feature from last30days-skill. Low effort with LLM integration. Niche but delightful."
+  },
+  {
+    "category": "UX",
+    "gap": "Provider-aware help text — `asearch help sources` shows available + configured sources (search-cli's agent-info command)",
+    "severity": "nice-to-have",
+    "effort_estimate": "1 day (dynamic help generation based on env/keys)",
+    "notes": "search-cli's `agent-info` command shows configured providers. asearch's `doctor` partially does this but could show richer status."
+  }
+]

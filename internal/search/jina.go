@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -27,7 +26,7 @@ func (b *JinaBackend) Search(query string, limit int) ([]Result, error) {
 
 // ReadURL fetches a URL as clean markdown via Jina Reader.
 func ReadURL(url string) (string, error) {
-	apiKey := os.Getenv("JINA_API_KEY")
+	apiKey := apiKey("jina")
 	jinaURL := "https://r.jina.ai/" + url
 
 	client := &http.Client{Timeout: 20 * time.Second}

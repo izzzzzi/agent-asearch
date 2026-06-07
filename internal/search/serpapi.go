@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 )
 
@@ -14,10 +13,10 @@ import (
 type SerpAPIBackend struct{}
 
 func (b *SerpAPIBackend) Name() Source { return SourceWeb }
-func (b *SerpAPIBackend) Available() bool   { return os.Getenv("SERPAPI_API_KEY") != "" }
+func (b *SerpAPIBackend) Available() bool   { return apiKey("serpapi") != "" }
 
 func (b *SerpAPIBackend) Search(query string, limit int) ([]Result, error) {
-	apiKey := os.Getenv("SERPAPI_API_KEY")
+	apiKey := apiKey("serpapi")
 	if apiKey == "" {
 		return nil, fmt.Errorf("SERPAPI_API_KEY not set; get at https://serpapi.com (100 free/month)")
 	}
