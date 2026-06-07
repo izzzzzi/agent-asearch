@@ -37,6 +37,7 @@ func NewRootCommand() *cobra.Command {
 		newPromptCommand(),
 		newOpenCommand(),
 		newResultsCommand(),
+		newRedditCommand(),
 		newSessionCommand(),
 		newDoctorCommand(),
 		newVersionCommand(),
