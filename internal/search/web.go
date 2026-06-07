@@ -148,7 +148,10 @@ func ddgSearch(query string, limit int) []Result {
 func wikiSearch(query string, limit int) []Result {
 	u := fmt.Sprintf("https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=%s&format=json&srlimit=%d",
 		url.QueryEscape(query), limit)
-	resp, err := http.Get(u)
+	req, _ := http.NewRequest("GET", u, nil)
+	req.Header.Set("User-Agent", "asearch/1.0 (agent-search-cli)")
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil
 	}

@@ -41,6 +41,7 @@ func NewRootCommand() *cobra.Command {
 		newSessionCommand(),
 		newDoctorCommand(),
 		newVersionCommand(),
+		newUpdateCommand(),
 		newConfigCommand(),
 	)
 	setCommandHelp(cmd)

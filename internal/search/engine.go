@@ -247,6 +247,7 @@ func normalizeURL(raw string) string {
 		if idx := strings.Index(s, "?"); idx >= 0 {
 			s = s[:idx]
 		}
+		s = strings.TrimSuffix(s, "/")
 	}
 
 	// Strip fragment
