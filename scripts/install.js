@@ -5,7 +5,7 @@ const path = require('path');
 const https = require('https');
 
 const PKG = 'agent-asearch';
-const VERSION = '0.3.0';
+const VERSION = require('../package.json').version;
 
 const stateDir = process.env.ASEARCH_STATE_DIR
   || path.join(process.env.HOME || process.env.USERPROFILE || '', '.asearch');
