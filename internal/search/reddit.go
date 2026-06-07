@@ -12,7 +12,7 @@ import (
 
 type RedditBackend struct{}
 
-func (b *RedditBackend) Name() Source   { return SourceReddit }
+func (b *RedditBackend) Name() Source    { return SourceReddit }
 func (b *RedditBackend) Available() bool { return true }
 
 func (b *RedditBackend) Search(query string, limit int) ([]Result, error) {
@@ -34,7 +34,9 @@ type RedditClient struct {
 
 func (rc *RedditClient) cookies() string {
 	data, err := os.ReadFile(os.ExpandEnv("$HOME/.asearch/reddit-cookies.txt"))
-	if err != nil { return "" }
+	if err != nil {
+		return ""
+	}
 	return parseNetscapeCookies(string(data))
 }
 
@@ -51,7 +53,9 @@ func (rc *RedditClient) get(path string, out any) error {
 		req.Header.Set("Cookie", c)
 	}
 	resp, err := rc.client.Do(req)
-	if err != nil { return fmt.Errorf("reddit: %w", err) }
+	if err != nil {
+		return fmt.Errorf("reddit: %w", err)
+	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("reddit: HTTP %d", resp.StatusCode)
@@ -92,13 +96,21 @@ type postWrap struct {
 // ── Subreddit posts ─────────────────────────────────────────────────────
 
 func (rc *RedditClient) SubredditPosts(subreddit, listing string, limit int) ([]Post, error) {
-	if listing == "" { listing = "hot" }
-	if limit == 0 { limit = 25 }
-	if limit > 100 { limit = 100 }
+	if listing == "" {
+		listing = "hot"
+	}
+	if limit == 0 {
+		limit = 25
+	}
+	if limit > 100 {
+		limit = 100
+	}
 
 	var w postWrap
 	err := rc.get(fmt.Sprintf("/r/%s/%s.json?limit=%d", subreddit, listing, limit), &w)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 
 	var posts []Post
 	for _, c := range w.Data.Children {
@@ -110,13 +122,20 @@ func (rc *RedditClient) SubredditPosts(subreddit, listing string, limit int) ([]
 // ── Post + Comments ─────────────────────────────────────────────────────
 
 func (rc *RedditClient) PostComments(permalink string) (post Post, comments []Post, err error) {
-	if !strings.HasPrefix(permalink, "/") { permalink = "/" + permalink }
+	if !strings.HasPrefix(permalink, "/") {
+		permalink = "/" + permalink
+	}
 	permalink = strings.TrimSuffix(permalink, "/") + ".json"
 
 	var raw []json.RawMessage
-	if err = rc.get(permalink, &raw); err != nil { return }
+	if err = rc.get(permalink, &raw); err != nil {
+		return
+	}
 
-	if len(raw) < 2 { err = fmt.Errorf("reddit: unexpected response"); return }
+	if len(raw) < 2 {
+		err = fmt.Errorf("reddit: unexpected response")
+		return
+	}
 
 	var pw postWrap
 	json.Unmarshal(raw[0], &pw)
@@ -152,9 +171,13 @@ type commentNode struct {
 func flattenComments(nodes []commentNode) []Post {
 	var comments []Post
 	for _, n := range nodes {
-		if n.Kind != "t1" { continue }
+		if n.Kind != "t1" {
+			continue
+		}
 		text := n.Data.Body
-		if len(text) > 200 { text = text[:200] + "..." }
+		if len(text) > 200 {
+			text = text[:200] + "..."
+		}
 		comments = append(comments, Post{
 			Title: text, Author: n.Data.Author, Score: n.Data.Score,
 			Created: n.Data.Created, Permalink: n.Data.Permalink,
@@ -176,23 +199,25 @@ func flattenComments(nodes []commentNode) []Post {
 // ── Subreddit info ──────────────────────────────────────────────────────
 
 type SubredditInfo struct {
-	Title           string `json:"title"`
-	DisplayName     string `json:"display_name"`
-	Description     string `json:"description"`
-	PublicDesc      string `json:"public_description"`
-	Subscribers     int    `json:"subscribers"`
-	ActiveUserCount int    `json:"active_user_count"`
+	Title           string  `json:"title"`
+	DisplayName     string  `json:"display_name"`
+	Description     string  `json:"description"`
+	PublicDesc      string  `json:"public_description"`
+	Subscribers     int     `json:"subscribers"`
+	ActiveUserCount int     `json:"active_user_count"`
 	Created         float64 `json:"created_utc"`
-	Over18          bool   `json:"over18"`
-	Lang            string `json:"lang"`
-	URL             string `json:"url"`
+	Over18          bool    `json:"over18"`
+	Lang            string  `json:"lang"`
+	URL             string  `json:"url"`
 }
 
 func (rc *RedditClient) SubredditInfo(name string) (*SubredditInfo, error) {
 	var r struct {
 		Data SubredditInfo `json:"data"`
 	}
-	if err := rc.get("/r/"+name+"/about.json", &r); err != nil { return nil, err }
+	if err := rc.get("/r/"+name+"/about.json", &r); err != nil {
+		return nil, err
+	}
 	r.Data.URL = "https://www.reddit.com" + r.Data.URL
 	return &r.Data, nil
 }
@@ -208,7 +233,9 @@ func searchRedditAPI(query string, limit int) ([]Result, error) {
 	var w postWrap
 	err := rc.get(fmt.Sprintf("/search.json?q=%s&limit=%d&sort=relevance&t=year",
 		url.QueryEscape(query), limit), &w)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 
 	return postsToResults(w.Data.Children), nil
 }
@@ -220,7 +247,9 @@ func redditPublicJSON(query string, limit int) ([]Result, error) {
 	req, _ := http.NewRequest("GET", u, nil)
 	req.Header.Set("User-Agent", "asearch/1.0")
 	resp, err := client.Do(req)
-	if err != nil { return nil, fmt.Errorf("reddit: %w", err) }
+	if err != nil {
+		return nil, fmt.Errorf("reddit: %w", err)
+	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 429 {
 		return nil, fmt.Errorf("rate limited — save cookies to ~/.asearch/reddit-cookies.txt")
@@ -240,13 +269,17 @@ func postsToResults(children []struct {
 	for _, c := range children {
 		d := c.Data
 		snippet := d.Selftext
-		if len(snippet) > 200 { snippet = snippet[:200] + "..." }
-		if snippet == "" { snippet = fmt.Sprintf("r/%s · %s", d.Subreddit, d.Author) }
+		if len(snippet) > 200 {
+			snippet = snippet[:200] + "..."
+		}
+		if snippet == "" {
+			snippet = fmt.Sprintf("r/%s · %s", d.Subreddit, d.Author)
+		}
 		results = append(results, Result{
 			Source: SourceReddit, Title: d.Title,
-			URL: "https://www.reddit.com" + d.Permalink,
+			URL:     "https://www.reddit.com" + d.Permalink,
 			Snippet: snippet, Date: time.Unix(int64(d.Created), 0).Format("2006-01-02"),
-			Score: float64(d.Score),
+			Score:      float64(d.Score),
 			Engagement: fmt.Sprintf("↑%d | 💬%d | r/%s | %s", d.Score, d.NumComments, d.Subreddit, d.Author),
 		})
 	}
@@ -259,9 +292,13 @@ func parseNetscapeCookies(raw string) string {
 	var parts []string
 	for _, line := range strings.Split(raw, "\n") {
 		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "#") { continue }
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
 		f := strings.Split(line, "\t")
-		if len(f) >= 7 { parts = append(parts, f[5]+"="+f[6]) }
+		if len(f) >= 7 {
+			parts = append(parts, f[5]+"="+f[6])
+		}
 	}
 	return strings.Join(parts, "; ")
 }

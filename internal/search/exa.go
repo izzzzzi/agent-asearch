@@ -27,10 +27,10 @@ func (b *ExaBackend) Search(query string, limit int) ([]Result, error) {
 	}
 
 	reqBody := map[string]any{
-		"query":           query,
-		"numResults":      limit,
-		"useAutoprompt":   true,
-		"type":            "auto",  // auto-detects neural vs keyword
+		"query":         query,
+		"numResults":    limit,
+		"useAutoprompt": true,
+		"type":          "auto", // auto-detects neural vs keyword
 		"contents": map[string]any{
 			"text": map[string]any{
 				"maxCharacters": 300,
@@ -55,12 +55,12 @@ func (b *ExaBackend) Search(query string, limit int) ([]Result, error) {
 
 	var apiResp struct {
 		Results []struct {
-			Title      string `json:"title"`
-			URL        string `json:"url"`
-			Text       string `json:"text"`
-			Score      float64 `json:"score"`
-			PublishedDate string `json:"publishedDate"`
-			Author     string `json:"author"`
+			Title         string  `json:"title"`
+			URL           string  `json:"url"`
+			Text          string  `json:"text"`
+			Score         float64 `json:"score"`
+			PublishedDate string  `json:"publishedDate"`
+			Author        string  `json:"author"`
 		} `json:"results"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {

@@ -33,35 +33,37 @@ func newRedditSubCommand() *cobra.Command {
 			}
 
 			type item struct {
-				ID     string `json:"id"`
-				Title  string `json:"title"`
-				URL    string `json:"url"`
-				Score  int    `json:"score"`
-				Ratio  float64 `json:"upvote_ratio"`
-				Comments int  `json:"comments"`
-				Author string `json:"author"`
-				Date   string `json:"date"`
-				Flair  string `json:"flair,omitempty"`
+				ID       string  `json:"id"`
+				Title    string  `json:"title"`
+				URL      string  `json:"url"`
+				Score    int     `json:"score"`
+				Ratio    float64 `json:"upvote_ratio"`
+				Comments int     `json:"comments"`
+				Author   string  `json:"author"`
+				Date     string  `json:"date"`
+				Flair    string  `json:"flair,omitempty"`
 			}
 			var items []item
 			for _, p := range posts {
-				if p.Stickied && listing == "hot" { continue } // skip stickies
+				if p.Stickied && listing == "hot" {
+					continue
+				} // skip stickies
 				items = append(items, item{
 					ID: p.ID, Title: p.Title,
-					URL: "https://www.reddit.com" + p.Permalink,
+					URL:   "https://www.reddit.com" + p.Permalink,
 					Score: p.Score, Ratio: p.UpvoteRatio,
 					Comments: p.NumComments, Author: p.Author,
-					Date: time.Unix(int64(p.Created), 0).Format("2006-01-02"),
+					Date:  time.Unix(int64(p.Created), 0).Format("2006-01-02"),
 					Flair: p.LinkFlair,
 				})
 			}
 
 			return writeJSON(cmd, map[string]any{
-				"ok":    true,
+				"ok":        true,
 				"subreddit": "r/" + args[0],
-				"listing": listing,
-				"count": len(items),
-				"items": items,
+				"listing":   listing,
+				"count":     len(items),
+				"items":     items,
 			})
 		},
 	}
@@ -84,22 +86,24 @@ func newRedditReadCommand() *cobra.Command {
 			}
 
 			type comment struct {
-				Author  string `json:"author"`
-				Body    string `json:"body"`
-				Score   int    `json:"score"`
-				Date    string `json:"date"`
+				Author string `json:"author"`
+				Body   string `json:"body"`
+				Score  int    `json:"score"`
+				Date   string `json:"date"`
 			}
 			var items []comment
 			for _, c := range comments {
 				items = append(items, comment{
 					Author: c.Author, Body: c.Title,
 					Score: c.Score,
-					Date: time.Unix(int64(c.Created), 0).Format("2006-01-02"),
+					Date:  time.Unix(int64(c.Created), 0).Format("2006-01-02"),
 				})
 			}
 
 			snippet := post.Selftext
-			if len(snippet) > 500 { snippet = snippet[:500] + "..." }
+			if len(snippet) > 500 {
+				snippet = snippet[:500] + "..."
+			}
 
 			return writeJSON(cmd, map[string]any{
 				"ok": true,
@@ -109,7 +113,7 @@ func newRedditReadCommand() *cobra.Command {
 					"comments_count": post.NumComments, "text": snippet,
 					"subreddit": post.Subreddit,
 				},
-				"comments": items,
+				"comments":       items,
 				"comments_count": len(items),
 			})
 		},
@@ -131,21 +135,25 @@ func newRedditInfoCommand() *cobra.Command {
 			}
 
 			desc := info.PublicDesc
-			if desc == "" { desc = info.Description }
-			if len(desc) > 500 { desc = desc[:500] + "..." }
+			if desc == "" {
+				desc = info.Description
+			}
+			if len(desc) > 500 {
+				desc = desc[:500] + "..."
+			}
 
 			return writeJSON(cmd, map[string]any{
 				"ok": true,
 				"subreddit": map[string]any{
-					"name": info.DisplayName,
-					"title": info.Title,
-					"url": info.URL,
+					"name":        info.DisplayName,
+					"title":       info.Title,
+					"url":         info.URL,
 					"description": desc,
 					"subscribers": info.Subscribers,
-					"active": info.ActiveUserCount,
-					"created": time.Unix(int64(info.Created), 0).Format("2006-01-02"),
-					"over18": info.Over18,
-					"language": info.Lang,
+					"active":      info.ActiveUserCount,
+					"created":     time.Unix(int64(info.Created), 0).Format("2006-01-02"),
+					"over18":      info.Over18,
+					"language":    info.Lang,
 				},
 			})
 		},

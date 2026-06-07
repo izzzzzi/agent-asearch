@@ -14,7 +14,7 @@ import (
 
 type YouTubeBackend struct{}
 
-func (b *YouTubeBackend) Name() Source   { return SourceYouTube }
+func (b *YouTubeBackend) Name() Source    { return SourceYouTube }
 func (b *YouTubeBackend) Available() bool { return true }
 
 func (b *YouTubeBackend) Search(query string, limit int) ([]Result, error) {
@@ -27,15 +27,21 @@ func (b *YouTubeBackend) Search(query string, limit int) ([]Result, error) {
 
 func readYTCookies() (string, string) {
 	data, err := os.ReadFile(os.ExpandEnv("$HOME/.asearch/youtube-cookies.txt"))
-	if err != nil { return "", "" }
+	if err != nil {
+		return "", ""
+	}
 	var parts []string
 	var sapisid string
 	for _, line := range strings.Split(string(data), "\n") {
 		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "#") { continue }
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
 		f := strings.Split(line, "\t")
 		if len(f) >= 7 {
-			if f[5] == "SAPISID" { sapisid = f[6] }
+			if f[5] == "SAPISID" {
+				sapisid = f[6]
+			}
 			parts = append(parts, f[5]+"="+f[6])
 		}
 	}
@@ -61,12 +67,18 @@ func searchYT(query string, limit int, cookieStr, sapisid string) ([]Result, err
 	req.Header.Set("X-YouTube-Client-Version", "2.20250314.07.00")
 
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil { return nil, fmt.Errorf("youtube: %w", err) }
+	if err != nil {
+		return nil, fmt.Errorf("youtube: %w", err)
+	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 { return nil, fmt.Errorf("youtube: HTTP %d", resp.StatusCode) }
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("youtube: HTTP %d", resp.StatusCode)
+	}
 
 	raw, err := io.ReadAll(resp.Body)
-	if err != nil { return nil, fmt.Errorf("youtube: %w", err) }
+	if err != nil {
+		return nil, fmt.Errorf("youtube: %w", err)
+	}
 
 	var body map[string]any
 	if err := json.Unmarshal(raw, &body); err != nil {
@@ -75,29 +87,49 @@ func searchYT(query string, limit int, cookieStr, sapisid string) ([]Result, err
 
 	// Navigate: contents > twoColumnSearchResultsRenderer > primaryContents > sectionListRenderer > contents
 	c1, _ := body["contents"].(map[string]any)
-	if c1 == nil { return nil, fmt.Errorf("youtube: no contents") }
+	if c1 == nil {
+		return nil, fmt.Errorf("youtube: no contents")
+	}
 	c2, _ := c1["twoColumnSearchResultsRenderer"].(map[string]any)
-	if c2 == nil { return nil, fmt.Errorf("youtube: no search renderer") }
+	if c2 == nil {
+		return nil, fmt.Errorf("youtube: no search renderer")
+	}
 	c3, _ := c2["primaryContents"].(map[string]any)
-	if c3 == nil { return nil, fmt.Errorf("youtube: no primary contents") }
+	if c3 == nil {
+		return nil, fmt.Errorf("youtube: no primary contents")
+	}
 	c4, _ := c3["sectionListRenderer"].(map[string]any)
-	if c4 == nil { return nil, fmt.Errorf("youtube: no section list") }
+	if c4 == nil {
+		return nil, fmt.Errorf("youtube: no section list")
+	}
 	sections, _ := c4["contents"].([]any)
-	if sections == nil { return nil, fmt.Errorf("youtube: no sections") }
+	if sections == nil {
+		return nil, fmt.Errorf("youtube: no sections")
+	}
 
 	var results []Result
 	for _, secAny := range sections {
 		sec, _ := secAny.(map[string]any)
-		if sec == nil { continue }
+		if sec == nil {
+			continue
+		}
 		isr, _ := sec["itemSectionRenderer"].(map[string]any)
-		if isr == nil { continue }
+		if isr == nil {
+			continue
+		}
 		items, _ := isr["contents"].([]any)
-		if items == nil { continue }
+		if items == nil {
+			continue
+		}
 
 		for _, itemAny := range items {
-			if len(results) >= limit { break }
+			if len(results) >= limit {
+				break
+			}
 			item, _ := itemAny.(map[string]any)
-			if item == nil { continue }
+			if item == nil {
+				continue
+			}
 			vr, _ := item["videoRenderer"].(map[string]any)
 			if vr == nil {
 				// Count non-video items
@@ -105,44 +137,60 @@ func searchYT(query string, limit int, cookieStr, sapisid string) ([]Result, err
 			}
 
 			videoID, _ := vr["videoId"].(string)
-			if videoID == "" { continue }
+			if videoID == "" {
+				continue
+			}
 
 			title := getText(vr, "title")
-			if title == "" { continue }
+			if title == "" {
+				continue
+			}
 
 			channel := getText(vr, "ownerText")
-			if channel == "" { channel = getText(vr, "longBylineText") }
+			if channel == "" {
+				channel = getText(vr, "longBylineText")
+			}
 			views := getSimple(vr, "viewCountText")
 			dur := getSimple(vr, "lengthText")
 			pub := getSimple(vr, "publishedTimeText")
 
 			results = append(results, Result{
 				Source: SourceYouTube, Title: title,
-				URL: fmt.Sprintf("https://www.youtube.com/watch?v=%s", videoID),
-				Snippet: fmt.Sprintf("%s — %s (%s)", title, channel, pub),
-				Date: pub,
+				URL:        fmt.Sprintf("https://www.youtube.com/watch?v=%s", videoID),
+				Snippet:    fmt.Sprintf("%s — %s (%s)", title, channel, pub),
+				Date:       pub,
 				Engagement: fmt.Sprintf("▶ %s | %s | %s", views, dur, channel),
 			})
 		}
 	}
-	if len(results) == 0 { return nil, fmt.Errorf("youtube: no results") }
+	if len(results) == 0 {
+		return nil, fmt.Errorf("youtube: no results")
+	}
 	return results, nil
 }
 
 func getText(m map[string]any, key string) string {
 	obj, _ := m[key].(map[string]any)
-	if obj == nil { return "" }
+	if obj == nil {
+		return ""
+	}
 	runs, _ := obj["runs"].([]any)
-	if len(runs) == 0 { return "" }
+	if len(runs) == 0 {
+		return ""
+	}
 	r0, _ := runs[0].(map[string]any)
-	if r0 == nil { return "" }
+	if r0 == nil {
+		return ""
+	}
 	s, _ := r0["text"].(string)
 	return s
 }
 
 func getSimple(m map[string]any, key string) string {
 	obj, _ := m[key].(map[string]any)
-	if obj == nil { return "" }
+	if obj == nil {
+		return ""
+	}
 	s, _ := obj["simpleText"].(string)
 	return s
 }

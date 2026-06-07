@@ -16,40 +16,52 @@ import (
 // Priority: SearXNG > DDG > Bing > Wikipedia > error.
 type WebBackend struct{}
 
-func (b *WebBackend) Name() Source   { return SourceWeb }
+func (b *WebBackend) Name() Source    { return SourceWeb }
 func (b *WebBackend) Available() bool { return true }
 
 func (b *WebBackend) Search(query string, limit int) ([]Result, error) {
 	// 1. SearXNG — if configured (self-hosted)
 	if apiKey("searxng") != "" {
-		if r := tryBackend(&SearXNGBackend{}, query, limit); r != nil { return r, nil }
+		if r := tryBackend(&SearXNGBackend{}, query, limit); r != nil {
+			return r, nil
+		}
 	}
 
 	// 2. API providers via config or env
 	// (providers check config.GetKey internally)
 
 	// 3. DuckDuckGo HTML — zero config, no JS
-	if r := ddgSearch(query, limit); r != nil { return r, nil }
+	if r := ddgSearch(query, limit); r != nil {
+		return r, nil
+	}
 
 	// 4. Wikipedia API
-	if r := wikiSearch(query, limit); r != nil { return r, nil }
+	if r := wikiSearch(query, limit); r != nil {
+		return r, nil
+	}
 
 	// 5. Bing HTML
-	if r := bingSearch(query, limit); r != nil { return r, nil }
+	if r := bingSearch(query, limit); r != nil {
+		return r, nil
+	}
 
 	return nil, fmt.Errorf(
-		"web search available via:\n"+
-			"  • Zero-config:  DuckDuckGo, Wikipedia, Bing (no key needed)\n"+
-			"  • API key:       asearch config set <provider> <key>\n"+
-			"                  or export TAVILY_API_KEY, EXA_API_KEY, etc.\n"+
+		"web search available via:\n" +
+			"  • Zero-config:  DuckDuckGo, Wikipedia, Bing (no key needed)\n" +
+			"  • API key:       asearch config set <provider> <key>\n" +
+			"                  or export TAVILY_API_KEY, EXA_API_KEY, etc.\n" +
 			"  • Self-hosted:   docker run searxng/searxng + ASEARCH_SEARXNG_URL",
 	)
 }
 
 func tryBackend(b Backend, query string, limit int) []Result {
 	r, err := b.Search(query, limit)
-	if err != nil || len(r) == 0 { return nil }
-	for i := range r { r[i].Source = SourceWeb }
+	if err != nil || len(r) == 0 {
+		return nil
+	}
+	for i := range r {
+		r[i].Source = SourceWeb
+	}
 	return r
 }
 
@@ -58,11 +70,15 @@ func tryBackend(b Backend, query string, limit int) []Result {
 func ddgSearch(query string, limit int) []Result {
 	u := fmt.Sprintf("https://html.duckduckgo.com/html/?q=%s", url.QueryEscape(query))
 	body := httpGet(u)
-	if body == "" { return nil }
+	if body == "" {
+		return nil
+	}
 
 	var results []Result
 	for _, item := range htmlq.FindAll(body, "div", "result") {
-		if len(results) >= limit { break }
+		if len(results) >= limit {
+			break
+		}
 
 		// Extract title link
 		links := item.Find("a", "")
@@ -86,7 +102,9 @@ func ddgSearch(query string, limit int) []Result {
 				break
 			}
 		}
-		if title == "" { continue }
+		if title == "" {
+			continue
+		}
 
 		// Extract snippet
 		snippet := ""
@@ -110,14 +128,18 @@ func ddgSearch(query string, limit int) []Result {
 	if len(results) == 0 {
 		// Try alternative: old-style result links
 		for _, a := range htmlq.FindAll(body, "a", "result-link") {
-			if len(results) >= limit { break }
+			if len(results) >= limit {
+				break
+			}
 			results = append(results, Result{
 				Source: SourceWeb, Title: a.Text, URL: a.Attrs["href"],
 				Engagement: "via DuckDuckGo",
 			})
 		}
 	}
-	if len(results) == 0 { return nil }
+	if len(results) == 0 {
+		return nil
+	}
 	return results
 }
 
@@ -127,7 +149,9 @@ func wikiSearch(query string, limit int) []Result {
 	u := fmt.Sprintf("https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=%s&format=json&srlimit=%d",
 		url.QueryEscape(query), limit)
 	resp, err := http.Get(u)
-	if err != nil { return nil }
+	if err != nil {
+		return nil
+	}
 	defer resp.Body.Close()
 
 	var api struct {
@@ -139,7 +163,9 @@ func wikiSearch(query string, limit int) []Result {
 			} `json:"search"`
 		} `json:"query"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&api); err != nil { return nil }
+	if err := json.NewDecoder(resp.Body).Decode(&api); err != nil {
+		return nil
+	}
 
 	var results []Result
 	for _, s := range api.Query.Search {
@@ -148,11 +174,13 @@ func wikiSearch(query string, limit int) []Result {
 		snip = strings.ReplaceAll(snip, "&lt;", "<")
 		snip = strings.ReplaceAll(snip, "&gt;", ">")
 		snip = stripHTML(snip)
-		if len(snip) > 200 { snip = snip[:200] + "..." }
+		if len(snip) > 200 {
+			snip = snip[:200] + "..."
+		}
 		results = append(results, Result{
 			Source: SourceWeb, Title: s.Title,
-			URL: fmt.Sprintf("https://en.wikipedia.org/wiki/%s", url.PathEscape(s.Title)),
-			Snippet: snip,
+			URL:        fmt.Sprintf("https://en.wikipedia.org/wiki/%s", url.PathEscape(s.Title)),
+			Snippet:    snip,
 			Engagement: "via Wikipedia",
 		})
 	}
@@ -164,11 +192,15 @@ func wikiSearch(query string, limit int) []Result {
 func bingSearch(query string, limit int) []Result {
 	u := fmt.Sprintf("https://www.bing.com/search?q=%s", url.QueryEscape(query))
 	body := httpGet(u)
-	if body == "" { return nil }
+	if body == "" {
+		return nil
+	}
 
 	var results []Result
 	for _, item := range htmlq.FindAll(body, "li", "b_algo") {
-		if len(results) >= limit { break }
+		if len(results) >= limit {
+			break
+		}
 		// Find the title link
 		links := item.Find("a", "")
 		title, href := "", ""
@@ -178,7 +210,9 @@ func bingSearch(query string, limit int) []Result {
 				break
 			}
 		}
-		if title == "" { continue }
+		if title == "" {
+			continue
+		}
 		// Find description
 		snippet := ""
 		for _, p := range item.Find("p", "") {
@@ -208,9 +242,13 @@ func httpGet(url string) string {
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36")
 	resp, err := client.Do(req)
-	if err != nil { return "" }
+	if err != nil {
+		return ""
+	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 { return "" }
+	if resp.StatusCode != 200 {
+		return ""
+	}
 	var buf strings.Builder
 	buf.Grow(100000)
 	io.Copy(&buf, resp.Body)
@@ -221,9 +259,17 @@ func stripHTML(s string) string {
 	var b strings.Builder
 	inTag := false
 	for _, r := range s {
-		if r == '<' { inTag = true; continue }
-		if r == '>' { inTag = false; continue }
-		if !inTag { b.WriteRune(r) }
+		if r == '<' {
+			inTag = true
+			continue
+		}
+		if r == '>' {
+			inTag = false
+			continue
+		}
+		if !inTag {
+			b.WriteRune(r)
+		}
 	}
 	return strings.TrimSpace(b.String())
 }

@@ -65,10 +65,10 @@ func (b *CodeBackend) Search(query string, limit int) ([]Result, error) {
 		}
 
 		results = append(results, Result{
-			Source: SourceCode,
-			Title: fmt.Sprintf("%s: %s", repo, item.Path),
-			URL: item.URL,
-			Snippet: snippet,
+			Source:     SourceCode,
+			Title:      fmt.Sprintf("%s: %s", repo, item.Path),
+			URL:        item.URL,
+			Snippet:    snippet,
 			Engagement: fmt.Sprintf("📁 %s/%s", repo, item.Path),
 		})
 	}

@@ -12,8 +12,8 @@ import (
 // Docs: https://docs.perplexity.ai — free tier available.
 type PerplexityBackend struct{}
 
-func (b *PerplexityBackend) Name() Source { return SourceWeb }
-func (b *PerplexityBackend) Available() bool   { return apiKey("perplexity") != "" }
+func (b *PerplexityBackend) Name() Source    { return SourceWeb }
+func (b *PerplexityBackend) Available() bool { return apiKey("perplexity") != "" }
 
 func (b *PerplexityBackend) Search(query string, limit int) ([]Result, error) {
 	apiKey := apiKey("perplexity")
@@ -27,14 +27,14 @@ func (b *PerplexityBackend) Search(query string, limit int) ([]Result, error) {
 			{"role": "system", "content": "Search the web and provide accurate, cited answers."},
 			{"role": "user", "content": query},
 		},
-		"max_tokens": 1024,
-		"search_domain_filter": []string{},
-		"return_images": false,
+		"max_tokens":               1024,
+		"search_domain_filter":     []string{},
+		"return_images":            false,
 		"return_related_questions": false,
-		"search_recency_filter": "month",
-		"top_p": 0.9,
-		"presence_penalty": 0,
-		"frequency_penalty": 1,
+		"search_recency_filter":    "month",
+		"top_p":                    0.9,
+		"presence_penalty":         0,
+		"frequency_penalty":        1,
 	}
 	body, _ := json.Marshal(reqBody)
 
@@ -44,7 +44,9 @@ func (b *PerplexityBackend) Search(query string, limit int) ([]Result, error) {
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
 	resp, err := client.Do(req)
-	if err != nil { return nil, fmt.Errorf("perplexity: %w", err) }
+	if err != nil {
+		return nil, fmt.Errorf("perplexity: %w", err)
+	}
 	defer resp.Body.Close()
 
 	var apiResp struct {
@@ -72,6 +74,8 @@ func (b *PerplexityBackend) Search(query string, limit int) ([]Result, error) {
 			Source: SourceWeb, Title: url, URL: url, Snippet: "📎 citation", Engagement: "perplexity",
 		})
 	}
-	if len(results) == 0 { return nil, fmt.Errorf("perplexity: 0 results") }
+	if len(results) == 0 {
+		return nil, fmt.Errorf("perplexity: 0 results")
+	}
 	return results, nil
 }

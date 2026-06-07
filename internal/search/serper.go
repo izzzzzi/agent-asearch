@@ -12,15 +12,17 @@ import (
 // Docs: https://serper.dev — 2500 free queries/month.
 type SerperBackend struct{}
 
-func (b *SerperBackend) Name() Source { return SourceWeb }
-func (b *SerperBackend) Available() bool   { return apiKey("serper") != "" }
+func (b *SerperBackend) Name() Source    { return SourceWeb }
+func (b *SerperBackend) Available() bool { return apiKey("serper") != "" }
 
 func (b *SerperBackend) Search(query string, limit int) ([]Result, error) {
 	apiKey := apiKey("serper")
 	if apiKey == "" {
 		return nil, fmt.Errorf("SERPER_API_KEY not set; get at https://serper.dev (2500 free/month)")
 	}
-	if limit > 100 { limit = 100 }
+	if limit > 100 {
+		limit = 100
+	}
 
 	reqBody := map[string]any{"q": query, "num": limit}
 	body, _ := json.Marshal(reqBody)
@@ -31,7 +33,9 @@ func (b *SerperBackend) Search(query string, limit int) ([]Result, error) {
 	req.Header.Set("X-API-KEY", apiKey)
 
 	resp, err := client.Do(req)
-	if err != nil { return nil, fmt.Errorf("serper: %w", err) }
+	if err != nil {
+		return nil, fmt.Errorf("serper: %w", err)
+	}
 	defer resp.Body.Close()
 
 	var apiResp struct {
@@ -49,12 +53,16 @@ func (b *SerperBackend) Search(query string, limit int) ([]Result, error) {
 	var results []Result
 	for _, r := range apiResp.Organic {
 		snippet := r.Snippet
-		if len(snippet) > 300 { snippet = snippet[:300] + "..." }
+		if len(snippet) > 300 {
+			snippet = snippet[:300] + "..."
+		}
 		results = append(results, Result{
 			Source: SourceWeb, Title: r.Title, URL: r.Link, Snippet: snippet, Date: r.Date,
 			Engagement: "via Google (Serper)",
 		})
 	}
-	if len(results) == 0 { return nil, fmt.Errorf("serper: 0 results") }
+	if len(results) == 0 {
+		return nil, fmt.Errorf("serper: 0 results")
+	}
 	return results, nil
 }

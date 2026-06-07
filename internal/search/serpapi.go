@@ -12,15 +12,17 @@ import (
 // Docs: https://serpapi.com — 100 free searches/month.
 type SerpAPIBackend struct{}
 
-func (b *SerpAPIBackend) Name() Source { return SourceWeb }
-func (b *SerpAPIBackend) Available() bool   { return apiKey("serpapi") != "" }
+func (b *SerpAPIBackend) Name() Source    { return SourceWeb }
+func (b *SerpAPIBackend) Available() bool { return apiKey("serpapi") != "" }
 
 func (b *SerpAPIBackend) Search(query string, limit int) ([]Result, error) {
 	apiKey := apiKey("serpapi")
 	if apiKey == "" {
 		return nil, fmt.Errorf("SERPAPI_API_KEY not set; get at https://serpapi.com (100 free/month)")
 	}
-	if limit > 100 { limit = 100 }
+	if limit > 100 {
+		limit = 100
+	}
 
 	params := url.Values{}
 	params.Set("api_key", apiKey)
@@ -30,7 +32,9 @@ func (b *SerpAPIBackend) Search(query string, limit int) ([]Result, error) {
 
 	client := &http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Get("https://serpapi.com/search?" + params.Encode())
-	if err != nil { return nil, fmt.Errorf("serpapi: %w", err) }
+	if err != nil {
+		return nil, fmt.Errorf("serpapi: %w", err)
+	}
 	defer resp.Body.Close()
 
 	var apiResp struct {
@@ -48,12 +52,16 @@ func (b *SerpAPIBackend) Search(query string, limit int) ([]Result, error) {
 	var results []Result
 	for _, r := range apiResp.OrganicResults {
 		snippet := r.Snippet
-		if len(snippet) > 300 { snippet = snippet[:300] + "..." }
+		if len(snippet) > 300 {
+			snippet = snippet[:300] + "..."
+		}
 		results = append(results, Result{
 			Source: SourceWeb, Title: r.Title, URL: r.Link, Snippet: snippet, Date: r.Date,
 			Engagement: "via Google (SerpAPI)",
 		})
 	}
-	if len(results) == 0 { return nil, fmt.Errorf("serpapi: 0 results") }
+	if len(results) == 0 {
+		return nil, fmt.Errorf("serpapi: 0 results")
+	}
 	return results, nil
 }

@@ -12,7 +12,7 @@ import (
 // Docs: https://parallel.ai — free tier available.
 type ParallelBackend struct{}
 
-func (b *ParallelBackend) Name() Source { return SourceWeb }
+func (b *ParallelBackend) Name() Source    { return SourceWeb }
 func (b *ParallelBackend) Available() bool { return apiKey("parallel") != "" }
 
 func (b *ParallelBackend) Search(query string, limit int) ([]Result, error) {
@@ -20,7 +20,9 @@ func (b *ParallelBackend) Search(query string, limit int) ([]Result, error) {
 	if apiKey == "" {
 		return nil, fmt.Errorf("PARALLEL_API_KEY not set; get at https://parallel.ai")
 	}
-	if limit > 20 { limit = 20 }
+	if limit > 20 {
+		limit = 20
+	}
 
 	reqBody := map[string]any{"query": query, "num_results": limit}
 	body, _ := json.Marshal(reqBody)
@@ -31,7 +33,9 @@ func (b *ParallelBackend) Search(query string, limit int) ([]Result, error) {
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
 	resp, err := client.Do(req)
-	if err != nil { return nil, fmt.Errorf("parallel: %w", err) }
+	if err != nil {
+		return nil, fmt.Errorf("parallel: %w", err)
+	}
 	defer resp.Body.Close()
 
 	var apiResp struct {
@@ -49,12 +53,16 @@ func (b *ParallelBackend) Search(query string, limit int) ([]Result, error) {
 	var results []Result
 	for _, r := range apiResp.Results {
 		snippet := r.Content
-		if len(snippet) > 300 { snippet = snippet[:300] + "..." }
+		if len(snippet) > 300 {
+			snippet = snippet[:300] + "..."
+		}
 		results = append(results, Result{
 			Source: SourceWeb, Title: r.Title, URL: r.URL, Snippet: snippet, Score: r.Score,
 			Engagement: fmt.Sprintf("via Parallel | score: %.2f", r.Score),
 		})
 	}
-	if len(results) == 0 { return nil, fmt.Errorf("parallel: 0 results") }
+	if len(results) == 0 {
+		return nil, fmt.Errorf("parallel: 0 results")
+	}
 	return results, nil
 }

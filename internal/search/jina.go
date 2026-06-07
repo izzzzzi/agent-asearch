@@ -12,7 +12,7 @@ import (
 // Free tier: 1M tokens/month, no API key needed (but key lifts rate limits).
 type JinaBackend struct{}
 
-func (b *JinaBackend) Name() Source { return SourceWeb }
+func (b *JinaBackend) Name() Source    { return SourceWeb }
 func (b *JinaBackend) Available() bool { return true }
 
 func (b *JinaBackend) Search(query string, limit int) ([]Result, error) {
@@ -20,8 +20,8 @@ func (b *JinaBackend) Search(query string, limit int) ([]Result, error) {
 	// For search, Jina offers a separate search endpoint.
 	// We use r.jina.ai to fetch content from URLs discovered via search.
 	return nil, fmt.Errorf(
-		"jina reader: use for URL extraction, not search. "+
-		"Usage: curl https://r.jina.ai/https://example.com -H 'Authorization: Bearer $JINA_API_KEY'")
+		"jina reader: use for URL extraction, not search. " +
+			"Usage: curl https://r.jina.ai/https://example.com -H 'Authorization: Bearer $JINA_API_KEY'")
 }
 
 // ReadURL fetches a URL as clean markdown via Jina Reader.
@@ -51,8 +51,8 @@ func ReadURL(url string) (string, error) {
 	}
 
 	type jinaResp struct {
-		Title string `json:"title"`
-		URL   string `json:"url"`
+		Title   string `json:"title"`
+		URL     string `json:"url"`
 		Content string `json:"content"`
 	}
 	// Jina Reader returns markdown directly in body, or JSON if Accept: application/json

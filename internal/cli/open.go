@@ -86,11 +86,11 @@ func newOpenCommand() *cobra.Command {
 				"sources": srcNames,
 				"total":   result.Total,
 				"next_commands": map[string]string{
-					"read":      fmt.Sprintf("asearch results read -s %s --limit 20", sid),
-					"read_seq":  fmt.Sprintf("asearch results read -s %s --seq 1 --limit 20", sid),
-					"filter":    fmt.Sprintf("asearch results filter -s %s --source web", sid),
-					"close":     fmt.Sprintf("asearch session close -s %s", sid),
-					"list":      "asearch session list",
+					"read":     fmt.Sprintf("asearch results read -s %s --limit 20", sid),
+					"read_seq": fmt.Sprintf("asearch results read -s %s --seq 1 --limit 20", sid),
+					"filter":   fmt.Sprintf("asearch results filter -s %s --source web", sid),
+					"close":    fmt.Sprintf("asearch session close -s %s", sid),
+					"list":     "asearch session list",
 				},
 			})
 		},

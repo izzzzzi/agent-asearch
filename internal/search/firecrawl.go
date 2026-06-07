@@ -13,7 +13,7 @@ import (
 // Docs: https://firecrawl.dev — free tier: 500 credits/month.
 type FirecrawlBackend struct{}
 
-func (b *FirecrawlBackend) Name() Source { return SourceWeb }
+func (b *FirecrawlBackend) Name() Source    { return SourceWeb }
 func (b *FirecrawlBackend) Available() bool { return apiKey("firecrawl") != "" }
 
 func (b *FirecrawlBackend) Search(query string, limit int) ([]Result, error) {
@@ -21,10 +21,14 @@ func (b *FirecrawlBackend) Search(query string, limit int) ([]Result, error) {
 	if apiKey == "" {
 		return nil, fmt.Errorf("FIRECRAWL_API_KEY not set; get at https://firecrawl.dev (500 free/month)")
 	}
-	if limit > 20 { limit = 20 }
+	if limit > 20 {
+		limit = 20
+	}
 
 	baseURL := os.Getenv("FIRECRAWL_URL")
-	if baseURL == "" { baseURL = "https://api.firecrawl.dev" }
+	if baseURL == "" {
+		baseURL = "https://api.firecrawl.dev"
+	}
 
 	reqBody := map[string]any{
 		"query": query,
@@ -41,15 +45,17 @@ func (b *FirecrawlBackend) Search(query string, limit int) ([]Result, error) {
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
 	resp, err := client.Do(req)
-	if err != nil { return nil, fmt.Errorf("firecrawl: %w", err) }
+	if err != nil {
+		return nil, fmt.Errorf("firecrawl: %w", err)
+	}
 	defer resp.Body.Close()
 
 	var apiResp struct {
 		Data []struct {
-			Title       string `json:"title"`
-			URL         string `json:"url"`
-			Description string `json:"description"`
-			Markdown    string `json:"markdown"`
+			Title         string `json:"title"`
+			URL           string `json:"url"`
+			Description   string `json:"description"`
+			Markdown      string `json:"markdown"`
 			PublishedDate string `json:"publishedDate"`
 		} `json:"data"`
 	}
@@ -60,13 +66,19 @@ func (b *FirecrawlBackend) Search(query string, limit int) ([]Result, error) {
 	var results []Result
 	for _, r := range apiResp.Data {
 		snippet := r.Description
-		if snippet == "" { snippet = r.Markdown }
-		if len(snippet) > 300 { snippet = snippet[:300] + "..." }
+		if snippet == "" {
+			snippet = r.Markdown
+		}
+		if len(snippet) > 300 {
+			snippet = snippet[:300] + "..."
+		}
 		results = append(results, Result{
 			Source: SourceWeb, Title: r.Title, URL: r.URL, Snippet: snippet, Date: r.PublishedDate,
 			Engagement: "via Firecrawl (JS rendered)",
 		})
 	}
-	if len(results) == 0 { return nil, fmt.Errorf("firecrawl: 0 results") }
+	if len(results) == 0 {
+		return nil, fmt.Errorf("firecrawl: 0 results")
+	}
 	return results, nil
 }

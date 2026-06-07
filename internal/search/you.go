@@ -12,15 +12,17 @@ import (
 // Docs: https://you.com — free tier available.
 type YouBackend struct{}
 
-func (b *YouBackend) Name() Source { return SourceWeb }
-func (b *YouBackend) Available() bool   { return apiKey("you") != "" }
+func (b *YouBackend) Name() Source    { return SourceWeb }
+func (b *YouBackend) Available() bool { return apiKey("you") != "" }
 
 func (b *YouBackend) Search(query string, limit int) ([]Result, error) {
 	apiKey := apiKey("you")
 	if apiKey == "" {
 		return nil, fmt.Errorf("YOU_API_KEY not set; get at https://you.com/api")
 	}
-	if limit > 20 { limit = 20 }
+	if limit > 20 {
+		limit = 20
+	}
 
 	params := url.Values{}
 	params.Set("query", query)
@@ -31,7 +33,9 @@ func (b *YouBackend) Search(query string, limit int) ([]Result, error) {
 	req.Header.Set("X-API-Key", apiKey)
 
 	resp, err := client.Do(req)
-	if err != nil { return nil, fmt.Errorf("you.com: %w", err) }
+	if err != nil {
+		return nil, fmt.Errorf("you.com: %w", err)
+	}
 	defer resp.Body.Close()
 
 	var apiResp struct {
@@ -49,12 +53,16 @@ func (b *YouBackend) Search(query string, limit int) ([]Result, error) {
 	var results []Result
 	for _, r := range apiResp.WebResults {
 		snippet := r.Snippet
-		if len(snippet) > 300 { snippet = snippet[:300] + "..." }
+		if len(snippet) > 300 {
+			snippet = snippet[:300] + "..."
+		}
 		results = append(results, Result{
 			Source: SourceWeb, Title: r.Title, URL: r.URL, Snippet: snippet, Date: r.Date,
 			Engagement: "via You.com",
 		})
 	}
-	if len(results) == 0 { return nil, fmt.Errorf("you.com: 0 results") }
+	if len(results) == 0 {
+		return nil, fmt.Errorf("you.com: 0 results")
+	}
 	return results, nil
 }

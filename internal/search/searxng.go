@@ -25,8 +25,8 @@ func (b *SearXNGBackend) Search(query string, limit int) ([]Result, error) {
 	baseURL := apiKey("searxng")
 	if baseURL == "" {
 		return nil, fmt.Errorf(
-			"searxng: set ASEARCH_SEARXNG_URL or run locally:\n"+
-				"  docker run -d -p 8080:8080 searxng/searxng\n"+
+			"searxng: set ASEARCH_SEARXNG_URL or run locally:\n" +
+				"  docker run -d -p 8080:8080 searxng/searxng\n" +
 				"  export ASEARCH_SEARXNG_URL=http://localhost:8080",
 		)
 	}
@@ -46,13 +46,13 @@ func (b *SearXNGBackend) Search(query string, limit int) ([]Result, error) {
 
 	var apiResp struct {
 		Results []struct {
-			Title       string   `json:"title"`
-			URL         string   `json:"url"`
-			Content     string   `json:"content"`
-			Engine      string   `json:"engine"`
-			Score       float64  `json:"score"`
-			Engines     []string `json:"engines"`
-			PublishedDate string `json:"publishedDate"`
+			Title         string   `json:"title"`
+			URL           string   `json:"url"`
+			Content       string   `json:"content"`
+			Engine        string   `json:"engine"`
+			Score         float64  `json:"score"`
+			Engines       []string `json:"engines"`
+			PublishedDate string   `json:"publishedDate"`
 		} `json:"results"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {

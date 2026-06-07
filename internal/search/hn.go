@@ -10,7 +10,7 @@ import (
 
 type HNBackend struct{}
 
-func (b *HNBackend) Name() Source   { return SourceHN }
+func (b *HNBackend) Name() Source    { return SourceHN }
 func (b *HNBackend) Available() bool { return true }
 
 func (b *HNBackend) Search(query string, limit int) ([]Result, error) {

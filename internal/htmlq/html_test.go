@@ -45,10 +45,16 @@ func TestSelfClose(t *testing.T) {
 func TestFindNested(t *testing.T) {
 	html := `<div class="r"><a href="http://x.com">Link</a></div>`
 	divs := FindAll(html, "div", "r")
-	if len(divs) == 0 { t.Fatal("no div") }
+	if len(divs) == 0 {
+		t.Fatal("no div")
+	}
 	links := divs[0].Find("a", "")
-	if len(links) == 0 { t.Fatal("no link") }
-	if links[0].Text != "Link" { t.Errorf("expected 'Link', got '%s'", links[0].Text) }
+	if len(links) == 0 {
+		t.Fatal("no link")
+	}
+	if links[0].Text != "Link" {
+		t.Errorf("expected 'Link', got '%s'", links[0].Text)
+	}
 	if links[0].Attrs["href"] != "http://x.com" {
 		t.Errorf("wrong href: %s", links[0].Attrs["href"])
 	}
@@ -57,7 +63,9 @@ func TestFindNested(t *testing.T) {
 func TestComment(t *testing.T) {
 	html := `<div><!-- comment -->visible</div>`
 	results := FindAll(html, "div", "")
-	if len(results) != 1 { t.Fatal("expected 1") }
+	if len(results) != 1 {
+		t.Fatal("expected 1")
+	}
 	if results[0].Text != "visible" {
 		t.Errorf("expected 'visible', got '%s'", results[0].Text)
 	}
@@ -66,7 +74,11 @@ func TestComment(t *testing.T) {
 func TestNoMatch(t *testing.T) {
 	html := `<div class="x">content</div>`
 	results := FindAll(html, "span", "")
-	if len(results) != 0 { t.Errorf("expected 0, got %d", len(results)) }
+	if len(results) != 0 {
+		t.Errorf("expected 0, got %d", len(results))
+	}
 	results2 := FindAll(html, "div", "y")
-	if len(results2) != 0 { t.Errorf("expected 0, got %d", len(results2)) }
+	if len(results2) != 0 {
+		t.Errorf("expected 0, got %d", len(results2))
+	}
 }

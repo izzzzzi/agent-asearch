@@ -10,8 +10,8 @@ import (
 
 type TwitterBackend struct{}
 
-func (b *TwitterBackend) Name() Source     { return SourceTwitter }
-func (b *TwitterBackend) Available() bool   { return true }
+func (b *TwitterBackend) Name() Source    { return SourceTwitter }
+func (b *TwitterBackend) Available() bool { return true }
 
 func (b *TwitterBackend) Search(query string, limit int) ([]Result, error) {
 	// Try twitter-cli with cookies passed via env vars
@@ -24,19 +24,19 @@ func (b *TwitterBackend) Search(query string, limit int) ([]Result, error) {
 		// Check if cookies exist to give better error
 		return nil, fmt.Errorf(
 			"twitter-cli failed (API may be temporarily unavailable).\n"+
-			"Run in terminal: TWITTER_AUTH_TOKEN=... TWITTER_CT0=... twitter search \"%s\"\n"+
-			"Cookies are stored at ~/.asearch/twitter-cookies.txt for reference.", query)
+				"Run in terminal: TWITTER_AUTH_TOKEN=... TWITTER_CT0=... twitter search \"%s\"\n"+
+				"Cookies are stored at ~/.asearch/twitter-cookies.txt for reference.", query)
 	}
 
 	// Check if cookie file exists (user already exported cookies)
 	return nil, fmt.Errorf(
-		"twitter search unavailable.\n"+
-		"Install: pipx install twitter-cli\n"+
-		"Then set cookies:\n"+
-		"  export TWITTER_AUTH_TOKEN=\"<your_auth_token>\"\n"+
-		"  export TWITTER_CT0=\"<your_ct0>\"\n"+
-		"Note: Twitter's search API is currently unstable (returns 404).\n"+
-		"This is a Twitter/X-side issue, not an asearch bug.",
+		"twitter search unavailable.\n" +
+			"Install: pipx install twitter-cli\n" +
+			"Then set cookies:\n" +
+			"  export TWITTER_AUTH_TOKEN=\"<your_auth_token>\"\n" +
+			"  export TWITTER_CT0=\"<your_ct0>\"\n" +
+			"Note: Twitter's search API is currently unstable (returns 404).\n" +
+			"This is a Twitter/X-side issue, not an asearch bug.",
 	)
 }
 
@@ -65,7 +65,9 @@ func twitterCLI(query string, limit int) ([]Result, error) {
 	var results []Result
 	for _, t := range tweets {
 		snippet := t.Text
-		if len(snippet) > 200 { snippet = snippet[:200] + "..." }
+		if len(snippet) > 200 {
+			snippet = snippet[:200] + "..."
+		}
 		results = append(results, Result{
 			Source: SourceTwitter, Title: snippet, URL: t.URL, Snippet: snippet,
 			Date: t.CreatedAt, Score: float64(t.Likes),

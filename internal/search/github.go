@@ -39,14 +39,14 @@ func ghSearch(query string, limit int) ([]Result, error) {
 	}
 
 	var data []struct {
-		Name            string `json:"name"`
-		FullName        string `json:"fullName"`
+		Name            string                 `json:"name"`
+		FullName        string                 `json:"fullName"`
 		Owner           struct{ Login string } `json:"owner"`
-		URL             string `json:"url"`
-		Description     string `json:"description"`
-		StargazersCount int    `json:"stargazersCount"`
-		Language        string `json:"language"`
-		UpdatedAt       string `json:"updatedAt"`
+		URL             string                 `json:"url"`
+		Description     string                 `json:"description"`
+		StargazersCount int                    `json:"stargazersCount"`
+		Language        string                 `json:"language"`
+		UpdatedAt       string                 `json:"updatedAt"`
 	}
 	if err := json.Unmarshal(out, &data); err != nil {
 		return nil, err
