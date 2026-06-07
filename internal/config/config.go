@@ -132,6 +132,8 @@ func nameToEnv(name string) string {
 		return "GITHUB_TOKEN"
 	case "searxng":
 		return "ASEARCH_SEARXNG_URL"
+	case "twitter":
+		return "TWITTER_BEARER_TOKEN"
 	default:
 		return ""
 	}

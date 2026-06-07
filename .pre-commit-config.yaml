@@ -1,0 +1,16 @@
+repos:
+  - repo: local
+    hooks:
+      - id: go-build
+        name: Go build
+        entry: bash -c 'cd "$(git rev-parse --show-toplevel)" && go build ./...'
+        language: system
+        pass_filenames: false
+        types: [go]
+
+      - id: go-vet
+        name: Go vet
+        entry: bash -c 'cd "$(git rev-parse --show-toplevel)" && go vet ./...'
+        language: system
+        pass_filenames: false
+        types: [go]

@@ -90,7 +90,7 @@ asearch session close -s a1b2c3d4
 | **you** | 🔑 | You.com search |
 | **firecrawl** | 🔑 | JS-rendered web scraping |
 | **parallel** | 🔑 | Parallel.ai search |
-| **twitter** | 🔧 | `pipx install twitter-cli` (API temporarily broken) |
+| **twitter** | ✅ built-in | Guest API (anonymous) or Bearer Token: `asearch config set twitter "..."` |
 
 ## Commands
 
@@ -191,7 +191,7 @@ OpenCode: Use `asearch open`, then `asearch results read/filter` with returned s
 
 - `web` without an API key shows setup instructions instead of results.
 - Reddit public JSON may rate-limit without cookies (save cookies from browser to ~/.asearch/reddit-cookies.txt).
-- Twitter requires `twitter-cli` with cookie auth.
+- Twitter search uses guest API (anonymous) or optional X API Bearer Token for higher reliability.
 - YouTube works via browser cookies (save to ~/.asearch/youtube-cookies.txt).
 
 ## Manual install

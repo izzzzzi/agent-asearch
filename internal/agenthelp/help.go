@@ -103,6 +103,6 @@ Self-hosted: searxng (docker run searxng/searxng + ASEARCH_SEARXNG_URL)
 API keys (any one): tavily, exa, brave, serper, serpapi, you, firecrawl, parallel, perplexity
   Save with: asearch config set <provider> <key>
 Needs cookies: youtube (~/.asearch/youtube-cookies.txt), reddit (~/.asearch/reddit-cookies.txt)
-Needs install: twitter (pipx install twitter-cli)`,
+No install: twitter (built-in, Guest API), optionally set TWITTER_BEARER_TOKEN for reliability`,
 	}
 }

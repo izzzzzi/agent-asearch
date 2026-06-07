@@ -34,7 +34,7 @@ asearch session close -s SID
 | Провайдер | Что сделать |
 |-----------|-------------|
 | **youtube** | Сохранить куки `~/.asearch/youtube-cookies.txt` (Netscape из браузера) |
-| **twitter** | `pipx install twitter-cli` → `twitter login` (откроет браузер один раз) |
+| **twitter** | Bearer Token из developer.twitter.com → `asearch config set twitter "AAAA..."` |
 
 ### Self-hosted — свой сервер, без лимитов
 
@@ -50,6 +50,7 @@ asearch open --query "..." --source searxng
 | Провайдер | Env var | Где взять | Бесплатно |
 |-----------|---------|-----------|:---------:|
 | **Tavily** | `TAVILY_API_KEY="tvly-..."` | tavily.com | ✅ |
+| **Twitter** | `TWITTER_BEARER_TOKEN="AAAA..."` | developer.twitter.com | 500k/мес |
 | **Perplexity** | `PERPLEXITY_API_KEY="pplx-..."` | docs.perplexity.ai | ✅ |
 | **Exa** | `EXA_API_KEY="..."` | exa.ai | ✅ |
 | **Brave** | `BRAVE_API_KEY="BSA..."` | brave.com/search/api | 2000/мес |
@@ -59,7 +60,7 @@ asearch open --query "..." --source searxng
 | **Firecrawl** | `FIRECRAWL_API_KEY="fc-..."` | firecrawl.dev | 500/мес |
 | **Parallel** | `PARALLEL_API_KEY="..."` | parallel.ai | ✅ |
 
-После установки любого ключа `--source web` автоматически делегирует в него.
+После установки любого ключа `--source web` автоматически делегирует в него. Twitter (X) использует официальное API v2 — `--source twitter`.
 
 ---
 

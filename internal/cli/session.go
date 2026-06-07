@@ -151,9 +151,10 @@ API keys (pick any one, free tiers available):
   After setting any key, --source web auto-delegates:
   SearXNG → Tavily → Perplexity → Exa → Brave → Serper → SerpAPI → You → Firecrawl → Parallel
 
-Browser auth (one-time):
-  twitter — pipx install twitter-cli && twitter login  (opens browser, saves cookies)
-            Then: asearch open --query "..." --source twitter
+Twitter/X (built-in, no install):
+  asearch open --query "..." --source twitter  # anonymous guest API
+  # Optional: set X API Bearer Token for higher reliability:
+  asearch config set twitter "AAAAAAAAAAAAAAAAAAAA..."
 
 == TOKEN ECONOMY ==
   Prefer --limit 20 for compact JSON.
@@ -201,7 +202,7 @@ func newDoctorCommand() *cobra.Command {
 				{Name: "github", Available: toolAvailable("gh"), Tool: "gh", Note: "GitHub CLI — repo search"},
 				{Name: "code", Available: toolAvailable("gh"), Tool: "gh", Note: "GitHub code search (gh search code)"},
 				{Name: "youtube", Available: true, Tool: "", Note: "YouTube search via browser cookies (save ~/.asearch/youtube-cookies.txt)"},
-				{Name: "twitter", Available: toolAvailable("twitter"), Tool: "twitter-cli", Note: "install with: pipx install twitter-cli"},
+				{Name: "twitter", Available: true, Tool: "", Note: "built-in Guest API; set TWITTER_BEARER_TOKEN for reliability"},
 			}
 
 			if err := state.EnsureDirs(); err != nil {

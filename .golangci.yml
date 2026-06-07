@@ -1,0 +1,50 @@
+version: "2"
+linters:
+  default: all
+  disable:
+    - lll           # long lines
+    - exhaustruct   # requires all struct fields initialized
+    - varnamelen    # too strict for short names
+    - nlreturn      # insists on newlines before return
+    - wsl           # whitespace rules, too opinionated
+    - cyclop        # cognitive complexity
+    - gochecknoglobals
+    - gochecknoinits
+    - godox         # TODO comments
+    - mnd           # magic numbers
+    - depguard      # dependency rules
+    - perfsprint    # performance suggestions
+    - musttag       # struct tag requirements
+    - tagalign      # tag alignment
+    - err113        # error handling style
+    - ireturn       # interface return rules
+    - wrapcheck     # error wrapping requirements
+    - noctx         # http client without context
+    - forcetypeassert
+    - gocognit
+    - funlen
+    - maintidx
+  settings:
+    errcheck:
+      exclude-functions:
+        - io.ReadAll
+        - io.Copy
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - staticcheck
+        text: "SA1019" # allow deprecated fields
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports

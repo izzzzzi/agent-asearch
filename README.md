@@ -95,7 +95,7 @@ asearch session close -s a1b2c3d4
 | **you** | 🔑 | You.com поиск |
 | **firecrawl** | 🔑 | JS-рендеринг страниц |
 | **parallel** | 🔑 | Parallel.ai поиск |
-| **twitter** | 🔧 | `pipx install twitter-cli` (API временно сломан) |
+| **twitter** | ✅ встроен | Guest API (анонимно) или Bearer Token: `asearch config set twitter "..."` |
 
 ## Команды
 
@@ -196,7 +196,7 @@ OpenCode: Используй `asearch open`, затем `asearch results read/fi
 
 - `web` без API-ключа показывает инструкцию по получению ключа, а не результаты.
 - Reddit public JSON может рейт-лимитить без кук (сохраните куки в ~/.asearch/reddit-cookies.txt).
-- Twitter требует `twitter-cli` с cookie-аутентификацией.
+- Twitter поиск — встроенный Guest API (анонимно) или опциональный X API Bearer Token для надёжности.
 - YouTube работает через куки браузера (сохраните в ~/.asearch/youtube-cookies.txt).
 
 ## Ручная установка
