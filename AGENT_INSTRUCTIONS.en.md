@@ -60,6 +60,7 @@ asearch open --query "..." --source searxng
 | **You.com** | `you` | you.com/api | ✅ |
 | **Firecrawl** | `firecrawl` | firecrawl.dev | 500/mo |
 | **Parallel** | `parallel` | parallel.ai | ✅ |
+| **Twitter** | `TWITTER_BEARER_TOKEN` | developer.twitter.com | 500k/month |
 
 ### Needs cookies from browser
 
