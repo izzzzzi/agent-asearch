@@ -16,6 +16,7 @@ func newOpenCommand() *cobra.Command {
 	var name string
 	var sources []string
 	var limit int
+	var crossRef bool
 
 	cmd := &cobra.Command{
 		Use:   "open --query QUERY [--source web,reddit,hn...]",
@@ -58,10 +59,11 @@ func newOpenCommand() *cobra.Command {
 			}
 
 			req := search.SearchRequest{
-				Query:   query,
-				Sources: srcs,
-				Limit:   limit,
-				Timeout: 60 * time.Second,
+				Query:    query,
+				Sources:  srcs,
+				Limit:    limit,
+				Timeout:  60 * time.Second,
+				CrossRef: crossRef,
 			}
 
 			result, searchErr := search.Search(req)
@@ -100,6 +102,7 @@ func newOpenCommand() *cobra.Command {
 	cmd.Flags().StringSliceVar(&sources, "source", []string{"web"}, "search sources: web, reddit, hn, github, youtube, twitter")
 	cmd.Flags().IntVar(&limit, "limit", 50, "max results per source")
 	cmd.Flags().StringVarP(&name, "name", "n", "", "session name (default: derived from query)")
+	cmd.Flags().BoolVarP(&crossRef, "cross-ref", "x", false, "cross-reference results across sources")
 
 	return cmd
 }

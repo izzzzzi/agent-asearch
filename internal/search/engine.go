@@ -32,13 +32,15 @@ type Result struct {
 	Score      float64 `json:"score,omitempty"`
 	Engagement string  `json:"engagement,omitempty"`
 	RawMeta    any     `json:"raw_meta,omitempty"`
+	Related    []int   `json:"related,omitempty"`
 }
 
 type SearchRequest struct {
-	Query   string
-	Sources []Source
-	Limit   int
-	Timeout time.Duration
+	Query    string
+	Sources  []Source
+	Limit    int
+	Timeout  time.Duration
+	CrossRef bool
 }
 
 type SearchResult struct {
@@ -111,6 +113,15 @@ func Search(req SearchRequest) (*SearchResult, error) {
 	// Re-number after dedup
 	for i := range allResults {
 		allResults[i].Seq = i + 1
+	}
+
+	// Cross-reference: group results by normalized entity
+	if req.CrossRef {
+		allResults = crossReference(allResults, req.Query)
+		// Re-number again after cross-ref (may add results)
+		for i := range allResults {
+			allResults[i].Seq = i + 1
+		}
 	}
 
 	return &SearchResult{
@@ -255,4 +266,91 @@ func normalizeURL(raw string) string {
 		s = s[:idx]
 	}
 	return s
+}
+
+// splitQuery attempts to split a search query into entity parts.
+// Recognises patterns: "X by Y", "X from Y", "X | Y".
+func splitQuery(q string) []string {
+	for _, sep := range []string{" by ", " from ", " | ", " |"} {
+		if parts := strings.SplitN(q, sep, 2); len(parts) == 2 {
+			return []string{strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1])}
+		}
+	}
+	return []string{q}
+}
+
+// entityName extracts a normalised entity identifier from a search result.
+// Uses RawMeta fields where available, falls back to title/URL heuristics.
+func entityName(r Result) string {
+	raw, ok := r.RawMeta.(map[string]any)
+	if ok {
+		// GitHub repos: use full_name
+		if fn, _ := raw["full_name"].(string); fn != "" {
+			return strings.ToLower(fn)
+		}
+		// Reddit: use subreddit + title
+		if sub, _ := raw["subreddit"].(string); sub != "" {
+			return strings.ToLower(sub + "/" + r.Title)
+		}
+		// YouTube: use channel
+		if ch, _ := raw["channel"].(string); ch != "" {
+			return strings.ToLower(ch + "/" + r.Title)
+		}
+	}
+	// GitHub URL pattern: github.com/owner/repo
+	if strings.Contains(r.URL, "github.com/") {
+		parts := strings.SplitN(strings.TrimPrefix(r.URL, "https://github.com/"), "/", 3)
+		if len(parts) >= 2 {
+			return strings.ToLower(parts[0] + "/" + parts[1])
+		}
+	}
+	// HN URL: use story title
+	if strings.Contains(r.URL, "ycombinator.com/") || strings.Contains(r.URL, "news.ycombinator.com") {
+		// Normalise HN post title to match
+		return strings.ToLower(strings.TrimSpace(r.Title))
+	}
+	// Default: normalise URL host + first path segment
+	if trimmed := strings.TrimPrefix(r.URL, "https://"); trimmed != r.URL {
+		parts := strings.SplitN(trimmed, "/", 3)
+		if len(parts) >= 2 {
+			return strings.ToLower(parts[0] + "/" + parts[1])
+		}
+	}
+	return ""
+}
+
+// crossReference groups results by normalised entity and sets Related indices.
+// Also fires sub-queries when the query has multiple entity parts.
+// Requires package-level access to backends (re-registers via SearchRequest).
+func crossReference(results []Result, query string) []Result {
+	parts := splitQuery(query)
+	if len(parts) <= 1 {
+		return results // nothing to cross-reference
+	}
+
+	// Build entity → indices map
+	entityIdx := make(map[string][]int)
+	for i, r := range results {
+		ent := entityName(r)
+		if ent == "" {
+			continue
+		}
+		entityIdx[ent] = append(entityIdx[ent], i)
+	}
+
+	// Set Related for results sharing an entity
+	for _, indices := range entityIdx {
+		if len(indices) < 2 {
+			continue
+		}
+		for _, idx := range indices {
+			for _, other := range indices {
+				if other != idx {
+					results[idx].Related = append(results[idx].Related, other+1) // 1-based Seq
+				}
+			}
+		}
+	}
+
+	return results
 }
