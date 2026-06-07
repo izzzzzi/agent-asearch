@@ -116,7 +116,10 @@ All operational commands return JSON with sid + next_commands.
 
 Zero-config (works immediately, nothing to install):
   hn       — asearch open --query "..." --source hn
-  reddit   — save cookies: ~/.asearch/reddit-cookies.txt (Netscape format from browser)
+  reddit   — save cookies: ~/.asearch/reddit-cookies.txt
+            Browse: asearch reddit sub NAME -l hot
+            Read:   asearch reddit read /r/.../comments/ID
+            Info:   asearch reddit info NAME
   github   — gh CLI already on PATH: asearch open --query "..." --source github
   jina     — asearch open --query "..." --source jina  (URL-to-markdown reader)
   youtube  — pipx install yt-dlp && asearch open --query "..." --source youtube
@@ -185,7 +188,7 @@ func newDoctorCommand() *cobra.Command {
 				{Name: "parallel", Available: os.Getenv("PARALLEL_API_KEY") != "", Tool: "parallel", Note: "Parallel.ai search; set PARALLEL_API_KEY"},
 				{Name: "jina", Available: true, Tool: "jina", Note: "URL-to-markdown reader; set JINA_API_KEY for higher rate limits (jina.ai)"},
 				{Name: "web", Available: true, Note: "DuckDuckGo Lite (auto-delegates to tavily/brave/exa if keys set)"},
-				{Name: "reddit", Available: true, Note: "public JSON API"},
+				{Name: "reddit", Available: true, Note: "Reddit JSON API (browse/read/info); needs cookies from browser"},
 				{Name: "hn", Available: true, Note: "Algolia API"},
 				{Name: "github", Available: toolAvailable("gh"), Tool: "gh", Note: "GitHub CLI"},
 				{Name: "youtube", Available: toolAvailable("yt-dlp"), Tool: "yt-dlp", Note: "install with: brew install yt-dlp"},
