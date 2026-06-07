@@ -1,6 +1,6 @@
 {
   "name": "agent-asearch",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Multi-source search CLI for LLM agents",
   "license": "MIT",
   "repository": {
