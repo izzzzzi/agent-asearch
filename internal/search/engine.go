@@ -19,6 +19,7 @@ const (
 	SourceYouTube Source = "youtube"
 	SourceTavily  Source = "tavily"
 	SourceSearXNG Source = "searxng"
+	SourceCode    Source = "code"
 )
 
 type Result struct {
@@ -81,6 +82,7 @@ func Search(req SearchRequest) (*SearchResult, error) {
 		&HNBackend{},
 		&GitHubBackend{},
 		&YouTubeBackend{},
+		&CodeBackend{},
 		&TwitterBackend{},
 	}
 

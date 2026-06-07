@@ -126,6 +126,8 @@ func parseSources(raw []string) []search.Source {
 				src = search.SourceYouTube
 			case "tavily":
 				src = search.SourceTavily
+			case "code", "gh-code", "github-code":
+				src = search.SourceCode
 			case "searxng", "searx":
 				src = search.SourceSearXNG
 			default:

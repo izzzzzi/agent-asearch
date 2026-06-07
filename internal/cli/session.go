@@ -190,7 +190,8 @@ func newDoctorCommand() *cobra.Command {
 				{Name: "web", Available: true, Note: "DuckDuckGo Lite (auto-delegates to tavily/brave/exa if keys set)"},
 				{Name: "reddit", Available: true, Note: "Reddit JSON API (browse/read/info); needs cookies from browser"},
 				{Name: "hn", Available: true, Note: "Algolia API"},
-				{Name: "github", Available: toolAvailable("gh"), Tool: "gh", Note: "GitHub CLI"},
+				{Name: "github", Available: toolAvailable("gh"), Tool: "gh", Note: "GitHub CLI — repo search"},
+				{Name: "code", Available: toolAvailable("gh"), Tool: "gh", Note: "GitHub code search (gh search code)"},
 				{Name: "youtube", Available: toolAvailable("yt-dlp"), Tool: "yt-dlp", Note: "install with: brew install yt-dlp"},
 				{Name: "twitter", Available: toolAvailable("twitter"), Tool: "twitter-cli", Note: "install with: pipx install twitter-cli"},
 			}
