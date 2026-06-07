@@ -89,6 +89,13 @@ func (b *ExaBackend) Search(query string, limit int) ([]Result, error) {
 			Date:       date,
 			Score:      r.Score,
 			Engagement: engagement,
+			RawMeta: map[string]any{
+				"title":    r.Title,
+				"url":      r.URL,
+				"score":    r.Score,
+				"author":   r.Author,
+				"pub_date": r.PublishedDate,
+			},
 		})
 	}
 	if len(results) == 0 {

@@ -160,6 +160,13 @@ func searchYT(query string, limit int, cookieStr, sapisid string) ([]Result, err
 				Snippet:    fmt.Sprintf("%s — %s (%s)", title, channel, pub),
 				Date:       pub,
 				Engagement: fmt.Sprintf("▶ %s | %s | %s", views, dur, channel),
+				RawMeta: map[string]any{
+					"video_id": videoID,
+					"channel":  channel,
+					"views":    views,
+					"duration": dur,
+					"published": pub,
+				},
 			})
 		}
 	}

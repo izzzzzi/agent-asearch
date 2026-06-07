@@ -8,6 +8,18 @@ import (
 	"time"
 )
 
+// hnHit is the raw Algolia search hit populated into RawMeta.
+type hnHit struct {
+	Title       string `json:"title"`
+	URL         string `json:"url"`
+	Points      int    `json:"points"`
+	NumComments int    `json:"num_comments"`
+	Author      string `json:"author"`
+	ObjectID    string `json:"objectID"`
+	CreatedAt   string `json:"created_at"`
+	StoryText   string `json:"story_text"`
+}
+
 type HNBackend struct{}
 
 func (b *HNBackend) Name() Source    { return SourceHN }
@@ -25,16 +37,7 @@ func (b *HNBackend) Search(query string, limit int) ([]Result, error) {
 	defer resp.Body.Close()
 
 	var data struct {
-		Hits []struct {
-			Title       string `json:"title"`
-			URL         string `json:"url"`
-			Points      int    `json:"points"`
-			NumComments int    `json:"num_comments"`
-			Author      string `json:"author"`
-			ObjectID    string `json:"objectID"`
-			CreatedAt   string `json:"created_at"`
-			StoryText   string `json:"story_text"`
-		} `json:"hits"`
+		Hits []hnHit `json:"hits"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return nil, fmt.Errorf("hn parse error: %w", err)
@@ -59,6 +62,7 @@ func (b *HNBackend) Search(query string, limit int) ([]Result, error) {
 			Date:       hit.CreatedAt[:10],
 			Score:      float64(hit.Points),
 			Engagement: engagement,
+			RawMeta:    hit,
 		})
 	}
 	return results, nil

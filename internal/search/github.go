@@ -75,6 +75,14 @@ func ghSearch(query string, limit int) ([]Result, error) {
 			Date:       date,
 			Score:      float64(r.StargazersCount),
 			Engagement: engagement,
+			RawMeta: map[string]any{
+				"full_name":   r.FullName,
+				"stars":       r.StargazersCount,
+				"language":    r.Language,
+				"owner":       r.Owner.Login,
+				"updated_at":  r.UpdatedAt,
+				"description": r.Description,
+			},
 		})
 	}
 	return results, nil
@@ -135,6 +143,13 @@ func githubAPISearch(query string, limit int) ([]Result, error) {
 			Date:       date,
 			Score:      float64(item.Stars),
 			Engagement: engagement,
+			RawMeta: map[string]any{
+				"full_name":   item.FullName,
+				"stars":       item.Stars,
+				"language":    item.Language,
+				"description": item.Description,
+				"updated_at":  item.UpdatedAt,
+			},
 		})
 	}
 	return results, nil

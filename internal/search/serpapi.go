@@ -58,6 +58,13 @@ func (b *SerpAPIBackend) Search(query string, limit int) ([]Result, error) {
 		results = append(results, Result{
 			Source: SourceWeb, Title: r.Title, URL: r.Link, Snippet: snippet, Date: r.Date,
 			Engagement: "via Google (SerpAPI)",
+			RawMeta: map[string]any{
+				"title":    r.Title,
+				"url":      r.Link,
+				"snippet":  r.Snippet,
+				"date":     r.Date,
+				"source":   "serpapi",
+			},
 		})
 	}
 	if len(results) == 0 {

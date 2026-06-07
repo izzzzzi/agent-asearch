@@ -281,6 +281,17 @@ func postsToResults(children []struct {
 			Snippet: snippet, Date: time.Unix(int64(d.Created), 0).Format("2006-01-02"),
 			Score:      float64(d.Score),
 			Engagement: fmt.Sprintf("↑%d | 💬%d | r/%s | %s", d.Score, d.NumComments, d.Subreddit, d.Author),
+			RawMeta: map[string]any{
+				"id":           d.ID,
+				"subreddit":    d.Subreddit,
+				"author":       d.Author,
+				"score":        d.Score,
+				"upvote_ratio": d.UpvoteRatio,
+				"num_comments": d.NumComments,
+				"domain":       d.Domain,
+				"stickied":     d.Stickied,
+				"created_utc":  d.Created,
+			},
 		})
 	}
 	return results

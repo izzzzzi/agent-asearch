@@ -68,6 +68,12 @@ func (b *BraveBackend) Search(query string, limit int) ([]Result, error) {
 			URL:     r.URL,
 			Snippet: snippet,
 			Date:    r.Age,
+			RawMeta: map[string]any{
+				"title":       r.Title,
+				"url":         r.URL,
+				"age":         r.Age,
+				"description": r.Description,
+			},
 		})
 	}
 	if len(results) == 0 {

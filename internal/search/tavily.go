@@ -75,6 +75,12 @@ func (b *TavilyBackend) Search(query string, limit int) ([]Result, error) {
 			Snippet:    apiResp.Answer,
 			Score:      1.0,
 			Engagement: fmt.Sprintf("response_time: %.2fs", apiResp.ResponseTime),
+			RawMeta: map[string]any{
+				"answer":        apiResp.Answer,
+				"response_time": apiResp.ResponseTime,
+				"query":         apiResp.Query,
+				"type":          "ai_answer",
+			},
 		})
 	}
 
@@ -91,6 +97,12 @@ func (b *TavilyBackend) Search(query string, limit int) ([]Result, error) {
 			Snippet:    snippet,
 			Score:      r.Score,
 			Engagement: fmt.Sprintf("relevance: %.2f", r.Score),
+			RawMeta: map[string]any{
+				"title":     r.Title,
+				"url":       r.URL,
+				"score":     r.Score,
+				"type":      "result",
+			},
 		})
 	}
 
