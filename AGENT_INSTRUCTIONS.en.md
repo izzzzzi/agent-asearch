@@ -72,7 +72,7 @@ asearch open --query "..." --source searxng
 
 | Provider | Setup |
 |----------|-------|
-| **twitter** | `pipx install twitter-cli && twitter login` (opens browser once) |
+| **twitter** | Bearer Token from developer.twitter.com → `asearch config set twitter "AAAA..."` |
 
 ---
 
