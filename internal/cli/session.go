@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var Version = "dev"
+
 func newSessionCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:              "session",
@@ -232,7 +234,7 @@ func newVersionCommand() *cobra.Command {
 			return writeJSON(cmd, map[string]any{
 				"ok":      true,
 				"tool":    "asearch",
-				"version": "0.1.0",
+				"version": Version,
 				"go":      "1.24",
 			})
 		},

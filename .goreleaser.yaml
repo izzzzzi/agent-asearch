@@ -18,6 +18,7 @@ builds:
       - -trimpath
     ldflags:
       - -s -w
+      - -X github.com/izzzzzi/agent-asearch/internal/cli.Version={{ .Version }}
 archives:
   - formats: ['tar.gz']
     name_template: "asearch_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
