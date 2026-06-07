@@ -7,9 +7,9 @@
 
 Язык: Русский | [English](README.en.md)
 
-Поисковый CLI для LLM-агентов. Одна команда — 10 источников.
+Поисковый CLI для LLM-агентов. Одна команда — 18 источников.
 
-`asearch` ищет одновременно в вебе, Hacker News, Reddit, GitHub, YouTube и X/Twitter, а также через Tavily, Exa и Brave. Не засоряет контекст агента: сначала возвращает компактные метаданные, потом агент читает только нужные страницы через пагинацию. Один Go-бинарь, нулевые зависимости.
+`asearch` ищет одновременно в вебе, Hacker News, Reddit, GitHub, YouTube, X/Twitter и коде, а также через Tavily, Exa, Brave и ещё 6 API. Не засоряет контекст агента: сначала возвращает компактные метаданные, потом агент читает только нужные страницы через пагинацию. Один Go-бинарь, единственная зависимость — Cobra.
 
 ![asearch architecture](docs/asearch-architecture.png)
 
@@ -18,18 +18,18 @@
 ```bash
 npm i -g agent-asearch
 
-# Бесплатные источники работают сразу
+# Zero-config — работает сразу, ничего не нужно
 asearch open --query "claude code plugins" --source hn,reddit
 
-# Самый дешёвый безлимитный веб-поиск — SearXNG за 30 секунд:
-docker run -d -p 8080:8080 searxng/searxng
-export ASEARCH_SEARXNG_URL=http://localhost:8080
-asearch open --query "claude code plugins" --source searxng
+# Web поиск — DDG + Wikipedia + Bing, тоже без ключей
+asearch open --query "claude code plugins" --source web
 
-# Или API-ключ для AI-поиска (любой один):
-export TAVILY_API_KEY="tvly-..."    # tavily.com — AI-оптимизированный
-export EXA_API_KEY="..."            # exa.ai — нейро/семантический
-export BRAVE_API_KEY="BSA..."       # brave.com/search/api — 2000 бесплатно/мес
+# Поиск по коду — gh search code
+asearch open --query "error handling golang" --source code
+
+# API-ключи сохраняются в конфиг (не нужны env var)
+asearch config set tavily "tvly-..."   # tavily.com
+asearch config set exa "..."           # exa.ai
 
 # С ключом — полноценный веб-поиск
 asearch open --query "claude code plugins" --source web,hn,reddit,github
@@ -67,7 +67,7 @@ asearch session close -s a1b2c3d4
 `asearch open`:
 
 - парсит `--source` и выбирает доступные поисковые бэкенды;
-- для `web` проверяет API-ключи в порядке: Tavily → Exa → Brave → SearXNG;
+- для `web` пробует: SearXNG → DDG → Wikipedia → Bing → API-ключи;
 - запускает поиск параллельно по всем выбранным источникам;
 - сохраняет результаты локально для пагинированного чтения;
 - возвращает `sid`, `total`, и `next_commands` для продолжения workflow.
@@ -76,17 +76,26 @@ asearch session close -s a1b2c3d4
 
 | Источник | Статус | Что нужно |
 |----------|:------:|-----------|
-| **searxng** | 🐳 Docker | `docker run -d -p 8080:8080 searxng/searxng` + `export ASEARCH_SEARXNG_URL=http://localhost:8080` |
-| **web** | ✅ | Авто-делегирование: SearXNG → Tavily → Exa → Brave |
+| Источник | Статус | Что нужно |
+|----------|:------:|-----------|
+| **web** | ✅ | DDG → Wikipedia → Bing HTML-скраппинг (без ключа) |
 | **hn** | ✅ | Algolia HN Search API (бесплатно, без ключа) |
-| **reddit** | ✅ | Public JSON API (без ключа) |
-| **github** | ✅ | `gh` CLI (без ключа для публичных репо) |
+| **reddit** | ✅ куки | Куки из браузера в ~/.asearch/reddit-cookies.txt |
+| **github** | ✅ | `gh` CLI |
+| **code** | ✅ | GitHub code search (через `gh`) |
+| **youtube** | ✅ куки | Куки в ~/.asearch/youtube-cookies.txt |
 | **jina** | ✅ | URL → markdown reader (jina.ai, без ключа) |
-| **tavily** | 🔑 | `TAVILY_API_KEY` — AI-ответы + structured search |
-| **exa** | 🔑 | `EXA_API_KEY` — нейро/семантический поиск |
-| **brave** | 🔑 | `BRAVE_API_KEY` — 35B-страничный индекс |
-| **youtube** | 🔧 куки | Сохранить куки из браузера в ~/.asearch/youtube-cookies.txt |
-| **twitter** | 🔧 | `pipx install twitter-cli` |
+| **searxng** | 🐳 | `docker run searxng/searxng` + ASEARCH_SEARXNG_URL |
+| **tavily** | 🔑 | `asearch config set tavily ...` — AI-ответы |
+| **exa** | 🔑 | `asearch config set exa ...` — нейро/семантический |
+| **brave** | 🔑 | `asearch config set brave ...` — 35B-страниц |
+| **serper** | 🔑 | Google SERP (2500 бесплатно/мес) |
+| **serpapi** | 🔑 | 40+ поисковиков |
+| **perplexity** | 🔑 | AI-ответы с цитатами |
+| **you** | 🔑 | You.com поиск |
+| **firecrawl** | 🔑 | JS-рендеринг страниц |
+| **parallel** | 🔑 | Parallel.ai поиск |
+| **twitter** | 🔧 | `pipx install twitter-cli` (API временно сломан) |
 
 ## Команды
 
@@ -94,7 +103,11 @@ asearch session close -s a1b2c3d4
 - `asearch results read -s SID --seq N --limit M` — пагинированное чтение.
 - `asearch results filter -s SID --source SRC` — фильтр по источнику.
 - `asearch session list|close|gc` — управление сессиями.
-- `asearch doctor` — проверка доступных бэкендов и API-ключей.
+- `asearch config set|get|show` — управление API-ключами.
+- `asearch reddit sub|read|info` — просмотр Reddit.
+- `asearch doctor` — проверка доступных бэкендов.
+- `asearch update` — самообновление.
+- `asearch completion bash|zsh|fish` — shell completion.
 - `asearch prompt` — инструкция для LLM-агента.
 - `asearch version` — версия и метаданные.
 

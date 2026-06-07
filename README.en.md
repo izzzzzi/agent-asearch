@@ -5,9 +5,9 @@
 
 Language: [Русский](README.md) | English
 
-Search CLI for LLM agents. One command, 10 sources.
+Search CLI for LLM agents. One command, 18 sources.
 
-`asearch` searches the web, Hacker News, Reddit, GitHub, YouTube, and X/Twitter simultaneously, plus Tavily, Exa, and Brave APIs. Keeps agent context clean: compact metadata first, then paginated reads of only what you need. One Go binary, zero dependencies.
+`asearch` searches the web, Hacker News, Reddit, GitHub, YouTube, X/Twitter, code, and 9 API providers simultaneously. Keeps agent context clean: compact metadata first, then paginated reads of only what you need. One Go binary, single dependency — Cobra.
 
 ![asearch architecture](docs/asearch-architecture.png)
 
@@ -16,13 +16,18 @@ Search CLI for LLM agents. One command, 10 sources.
 ```bash
 npm i -g agent-asearch
 
-# Free sources work immediately
+# Zero-config — works immediately, nothing to install
 asearch open --query "claude code plugins" --source hn,reddit
 
-# For web search, add any one API key:
-export TAVILY_API_KEY="tvly-..."    # tavily.com — AI-optimized
-export EXA_API_KEY="..."            # exa.ai — neural/semantic
-export BRAVE_API_KEY="BSA..."       # brave.com/search/api — 2000 free/month
+# Web search — DDG + Wikipedia + Bing, no keys needed
+asearch open --query "claude code plugins" --source web
+
+# Code search — gh search code
+asearch open --query "error handling golang" --source code
+
+# API keys persist in config (no env vars)
+asearch config set tavily "tvly-..."   # tavily.com
+asearch config set exa "..."           # exa.ai
 
 # With a key — full web search
 asearch open --query "claude code plugins" --source web,hn,reddit,github
@@ -59,7 +64,7 @@ asearch session close -s a1b2c3d4
 `asearch open`:
 
 - parses `--source` and selects available search backends;
-- for `web`, checks API keys in order: Tavily → Exa → Brave → SearXNG;
+- for `web`, tries in order: SearXNG → DDG HTML → Wikipedia → Bing HTML → API providers;
 - runs search in parallel across all selected sources;
 - saves results locally for paginated reading;
 - returns `sid`, `total`, and `next_commands`.
@@ -68,16 +73,24 @@ asearch session close -s a1b2c3d4
 
 | Source | Out-of-box | Requires |
 |--------|:----------:|----------|
-| **web** | ✅ | Auto-delegates: Tavily → Exa → Brave → SearXNG |
+| **web** | ✅ | DDG → Wikipedia → Bing HTML scrapers (no key) |
 | **hn** | ✅ | Algolia HN Search API (free, no key) |
-| **reddit** | ✅ | Public JSON API (no key) |
-| **github** | ✅ | `gh` CLI (no key for public repos) |
+| **reddit** | ✅ cookies | Browser cookies → ~/.asearch/reddit-cookies.txt |
+| **github** | ✅ | `gh` CLI |
+| **code** | ✅ | GitHub code search via `gh` |
+| **youtube** | ✅ cookies | Browser cookies → ~/.asearch/youtube-cookies.txt |
 | **jina** | ✅ | URL → markdown reader (jina.ai, no key) |
-| **tavily** | 🔑 | `TAVILY_API_KEY` — AI answers + structured search |
-| **exa** | 🔑 | `EXA_API_KEY` — neural/semantic search |
-| **brave** | 🔑 | `BRAVE_API_KEY` — 35B-page index |
-| **youtube** | 🔧 cookies | Save browser cookies to ~/.asearch/youtube-cookies.txt |
-| **twitter** | 🔧 | `pipx install twitter-cli` |
+| **searxng** | 🐳 | `docker run searxng/searxng` + ASEARCH_SEARXNG_URL |
+| **tavily** | 🔑 | `asearch config set tavily ...` — AI answers |
+| **exa** | 🔑 | `asearch config set exa ...` — neural search |
+| **brave** | 🔑 | `asearch config set brave ...` — 35B index |
+| **serper** | 🔑 | Google SERP (2500 free/month) |
+| **serpapi** | 🔑 | 40+ search engines |
+| **perplexity** | 🔑 | AI answers with citations |
+| **you** | 🔑 | You.com search |
+| **firecrawl** | 🔑 | JS-rendered web scraping |
+| **parallel** | 🔑 | Parallel.ai search |
+| **twitter** | 🔧 | `pipx install twitter-cli` (API temporarily broken) |
 
 ## Commands
 
@@ -85,9 +98,13 @@ asearch session close -s a1b2c3d4
 - `asearch results read -s SID --seq N --limit M` — paginated read.
 - `asearch results filter -s SID --source SRC` — filter by source.
 - `asearch session list|close|gc` — session management.
-- `asearch doctor` — check available backends and API keys.
+- `asearch config set|get|show` — API key management.
+- `asearch reddit sub|read|info` — browse Reddit.
+- `asearch doctor` — check available backends.
+- `asearch update` — self-update.
+- `asearch completion bash|zsh|fish` — shell completion.
 - `asearch prompt` — LLM agent instructions.
-- `asearch version` — version metadata.
+- `asearch version` — version info.
 
 ## Token economy
 
