@@ -95,7 +95,7 @@ asearch session close -s a1b2c3d4
 ## Commands
 
 - `asearch open --query Q --source SRC` — start a search session.
-- `asearch open --query Q -x` — cross-reference results (tool by author).
+- `asearch open --query Q -x` / `--cross-ref` — cross-reference results (tool by author).
 - `asearch open --query Q --synth` — inline results + agent synthesis prompt.
 - `asearch results read -s SID --seq N --limit M` — paginated read.
 - `asearch results filter -s SID --source SRC` — filter by source.
