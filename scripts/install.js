@@ -1,43 +1,87 @@
 #!/usr/bin/env node
-// Download native binary on install
+const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
+
+const PKG = 'agent-asearch';
+const VERSION = '0.3.0';
 
 const stateDir = process.env.ASEARCH_STATE_DIR
   || path.join(process.env.HOME || process.env.USERPROFILE || '', '.asearch');
 const binDir = path.join(stateDir, 'bin');
 
-// If SKIP_DOWNLOAD is set, create a placeholder
-if (process.env.AGENT_ASEARCH_SKIP_DOWNLOAD === '1') {
-  if (!fs.existsSync(binDir)) fs.mkdirSync(binDir, { recursive: true });
-  const placeholder = path.join(binDir, 'asearch');
-  if (!fs.existsSync(placeholder)) {
-    fs.writeFileSync(placeholder, '#!/bin/sh\necho \'{"ok":false,"code":"not_downloaded","message":"binary not downloaded","hint":"run npm i -g agent-asearch or set ASEARCH_BINARY_PATH"}\'\nexit 1\n');
-    try { fs.chmodSync(placeholder, 0o755); } catch (_) {}
-  }
-  console.log('[agent-asearch] skipped binary download (AGENT_ASEARCH_SKIP_DOWNLOAD=1)');
-  process.exit(0);
-}
+const platformMap = {
+  darwin: 'darwin', win32: 'windows', linux: 'linux',
+};
+const archMap = {
+  x64: 'amd64', arm64: 'arm64',
+};
 
-// Create bin directory
-if (!fs.existsSync(binDir)) {
-  fs.mkdirSync(binDir, { recursive: true });
-}
-
-// Build locally if go is available and source is present
-const goModPath = path.join(__dirname, '..', 'go.mod');
-if (fs.existsSync(goModPath)) {
-  const { spawnSync } = require('child_process');
-  const result = spawnSync('go', ['build', '-o', path.join(binDir, 'asearch'), './cmd/asearch'], {
-    cwd: path.join(__dirname, '..'),
-    stdio: 'pipe'
+function download(url, dest) {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(dest);
+    https.get(url, { timeout: 30000 }, (res) => {
+      if (res.statusCode === 302 || res.statusCode === 301) {
+        file.close();
+        fs.unlinkSync(dest);
+        return download(res.headers.location, dest).then(resolve).catch(reject);
+      }
+      if (res.statusCode !== 200) {
+        file.close();
+        fs.unlinkSync(dest);
+        return reject(new Error(`HTTP ${res.statusCode}`));
+      }
+      res.pipe(file);
+      file.on('finish', () => { file.close(); resolve(); });
+    }).on('error', (err) => {
+      file.close();
+      fs.unlinkSync(dest, () => {});
+      reject(err);
+    });
   });
-  if (result.status === 0) {
-    console.log('[agent-asearch] built from source');
+}
+
+async function install() {
+  const plat = platformMap[process.platform];
+  const arch = archMap[process.arch];
+  if (!plat || !arch) {
+    console.log(`[agent-asearch] unsupported platform: ${process.platform}/${process.arch}`);
     process.exit(0);
   }
+
+  const binName = process.platform === 'win32' ? 'asearch.exe' : 'asearch';
+  const archiveName = `asearch_${VERSION}_${plat}_${arch}.tar.gz`;
+  const url = `https://github.com/izzzzzi/agent-asearch/releases/download/v${VERSION}/${archiveName}`;
+  const dest = path.join(binDir, binName);
+
+  if (fs.existsSync(dest)) {
+    console.log(`[agent-asearch] binary already exists: ${dest}`);
+    process.exit(0);
+  }
+
+  if (!fs.existsSync(binDir)) fs.mkdirSync(binDir, { recursive: true });
+
+  const tmpDir = fs.mkdtempSync('asearch-');
+  const tarball = path.join(tmpDir, archiveName);
+
+  try {
+    console.log(`[agent-asearch] downloading ${url}...`);
+    await download(url, tarball);
+    const { spawnSync } = require('child_process');
+    spawnSync('tar', ['xzf', tarball, '-C', tmpDir], { stdio: 'pipe' });
+    const extracted = path.join(tmpDir, binName);
+    if (fs.existsSync(extracted)) {
+      fs.renameSync(extracted, dest);
+      fs.chmodSync(dest, 0o755);
+      console.log(`[agent-asearch] installed to ${dest}`);
+    }
+  } catch (err) {
+    console.log(`[agent-asearch] download failed: ${err.message}`);
+    console.log('[agent-asearch] install binary manually from https://github.com/izzzzzi/agent-asearch/releases');
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 }
 
-// Not from npm - just exit quietly
-console.log('[agent-asearch] install stub — binary will be built at first use');
-process.exit(0);
+install();

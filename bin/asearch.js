@@ -11,27 +11,24 @@ function getBinaryPath() {
   const stateDir = process.env.ASEARCH_STATE_DIR
     || path.join(process.env.HOME || process.env.USERPROFILE || '', '.asearch');
 
-  const binaryPath = path.join(stateDir, 'bin', `asearch-${platform}-${arch}${ext}`);
+  // 1. ~/.asearch/bin/asearch (installed by postinstall)
+  const installedPath = path.join(stateDir, 'bin', 'asearch' + ext);
+  if (fs.existsSync(installedPath)) return installedPath;
 
-  if (fs.existsSync(binaryPath)) {
-    return binaryPath;
-  }
+  // 2. Same directory as wrapper
+  const localPath = path.join(__dirname, 'asearch' + ext);
+  if (fs.existsSync(localPath)) return localPath;
 
-  const names = platform === 'win32'
-    ? ['asearch.exe', 'asearch']
-    : ['asearch'];
+  // 3. PATH lookup (skip if it's this same script)
+  try {
+    const which = require('child_process').execSync('which asearch 2>/dev/null || command -v asearch', { encoding: 'utf8' }).trim();
+    if (which && !which.includes('bin/asearch.js')) {
+      return which;
+    }
+  } catch (_) {}
 
-  for (const name of names) {
-    const p = path.join(__dirname, name);
-    if (fs.existsSync(p)) return p;
-  }
-
-  for (const name of names) {
-    const p = path.join(stateDir, 'bin', name);
-    if (fs.existsSync(p)) return p;
-  }
-
-  return 'asearch';
+  console.error('[asearch] binary not found — run: npm explore agent-asearch -g -- npm run postinstall');
+  process.exit(1);
 }
 
 const bin = getBinaryPath();
