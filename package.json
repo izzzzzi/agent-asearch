@@ -37,6 +37,7 @@
     "README.md",
     "README.en.md",
     "AGENT_INSTRUCTIONS.md",
+    "AGENT_INSTRUCTIONS.en.md",
     "SYSTEM_PROMPT_snippet.md",
     "LICENSE"
   ]
