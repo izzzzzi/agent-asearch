@@ -162,6 +162,11 @@ Twitter/X (built-in, no install):
   Pipe with --raw: asearch results read -s SID --raw | head -50
   Always close sessions: asearch session close -s SID
 
+== CROSS-REFERENCE & SYNTHESIS ==
+  --cross-ref / -x: add to open e.g. "claude code by anthropic" to find cross-source connections
+  --synth: add to open to get inline results + next_commands.synth with agent synthesis prompt
+  Agent reads synth prompt and produces structured JSON report (summary, entities, timeline, connections)
+
 == DEDUPLICATION ==
   Cross-source duplicates are automatically removed by normalized URL.
   First occurrence wins — earlier backends in the chain have priority.
