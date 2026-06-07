@@ -98,7 +98,6 @@ func Search(req SearchRequest) (*SearchResult, error) {
 	for _, b := range backends {
 		results, err := b.Search(req.Query, req.Limit)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, `{"ok":false,"source":"%s","warning":"%s"}`+"\n", b.Name(), err.Error())
 			continue
 		}
 		allResults = append(allResults, results...)
@@ -215,21 +214,39 @@ func normalizeURL(raw string) string {
 	if raw == "" {
 		return ""
 	}
-	// Lowercase
 	s := strings.ToLower(raw)
-	// Strip protocol
 	s = strings.TrimPrefix(s, "https://")
 	s = strings.TrimPrefix(s, "http://")
-	// Strip www.
 	s = strings.TrimPrefix(s, "www.")
-	// Strip trailing slash
 	s = strings.TrimSuffix(s, "/")
-	// Strip query params for known sites (Reddit, HN, YouTube)
-	if strings.Contains(s, "reddit.com/") || strings.Contains(s, "youtube.com/watch") || strings.Contains(s, "ycombinator.com/") {
+
+	// For YouTube, only strip tracking params, keep video ID
+	if strings.Contains(s, "youtube.com/watch") || strings.Contains(s, "youtu.be/") {
+		if idx := strings.Index(s, "?"); idx >= 0 {
+			query := s[idx+1:]
+			var cleanParams []string
+			for _, param := range strings.Split(query, "&") {
+				// Keep video ID, strip tracking
+				if strings.HasPrefix(param, "v=") {
+					cleanParams = append(cleanParams, param)
+				}
+			}
+			if len(cleanParams) > 0 {
+				s = s[:idx] + "?" + strings.Join(cleanParams, "&")
+			} else {
+				s = s[:idx]
+			}
+		}
+		return s
+	}
+
+	// Strip query params for Reddit, HN
+	if strings.Contains(s, "reddit.com/") || strings.Contains(s, "ycombinator.com/") {
 		if idx := strings.Index(s, "?"); idx >= 0 {
 			s = s[:idx]
 		}
 	}
+
 	// Strip fragment
 	if idx := strings.Index(s, "#"); idx >= 0 {
 		s = s[:idx]
