@@ -26,7 +26,7 @@ func RootHelp() HelpPayload {
 		AgentPromptCommand: "asearch prompt",
 		Docs:               []string{"AGENT_INSTRUCTIONS.md", "README.md"},
 		Workflow: []string{
-			"Start with asearch open --query \"your topic\" --source web,reddit,hn,github",
+			"Start with asearch open --query \"your topic\" --source web,reddit,hn,github,youtube",
 			"Keep returned sid and follow next_commands",
 			"Use asearch results read -s SID --seq 1 --limit 20 for first page",
 			"Use asearch results filter -s SID --source reddit to narrow by platform",
@@ -36,14 +36,16 @@ func RootHelp() HelpPayload {
 		},
 		Commands: map[string]string{
 			"open":            "asearch open --query \"topic\" --source web,reddit,hn,github",
-			"open_multi":      "asearch open --query \"topic\" --source tavily,web,reddit,hn,github,youtube",
-			"open_tavily":     "asearch open --query \"topic\" --source tavily",
+			"open_multi":      "asearch open --query \"topic\" --source web,hn,reddit,github,youtube,code",
+			"open_code":       "asearch open --query \"func\" --source code",
 			"results_read":    "asearch results read -s SID --seq 1 --limit 20",
 			"results_filter":  "asearch results filter -s SID --source reddit",
 			"session_list":    "asearch session list",
 			"session_close":   "asearch session close -s SID",
 			"session_gc":      "asearch session gc",
 			"doctor":          "asearch doctor",
+			"config_show":     "asearch config show",
+			"config_set":      "asearch config set <key> <value>",
 			"prompt":          "asearch prompt",
 			"version":         "asearch version",
 		},
@@ -89,22 +91,18 @@ func Prompt() PromptPayload {
 	return PromptPayload{
 		OK: true, Tool: "asearch", Audience: "llm_agent", Kind: "agent_prompt",
 		Prompt: `You are using asearch, a multi-source search CLI for LLM agents.
-All operational commands return JSON. 
-Start with asearch open --query "your topic" --source searxng,web,hn,reddit,github,youtube
-For zero-cost unlimited search, run: docker run -d -p 8080:8080 searxng/searxng && export ASEARCH_SEARXNG_URL=http://localhost:8080
-For AI-optimized results, use --source tavily (needs TAVILY_API_KEY, free tier at tavily.com)
+All operational commands return JSON.
+Start with asearch open --query "your topic" --source web,hn,reddit,github,youtube,code
 Save the returned sid, then use asearch results read -s SID --seq 1 --limit 20
 Filter by source: asearch results filter -s SID --source reddit
 Check available tools: asearch doctor | list sessions: asearch session list
 Always close sessions: asearch session close -s SID
 
-Sources (zero-config): searxng (self-host, docker), web (auto-delegate), hn, reddit, github, jina
-Sources (needs API key): tavily (TAVILY_API_KEY), exa (EXA_API_KEY), brave (BRAVE_API_KEY)
-Sources (needs tools): youtube (yt-dlp), twitter (twitter-cli)
-
-Prefer reading results in small chunks (--limit 20) to save tokens.
-Use --raw for piping: asearch results read -s SID --raw | head -50
-Use next_commands from JSON responses to continue workflows.
-Cross-source duplicates are automatically removed by normalized URL.`,
+Zero-config sources: web (DDG/Wikipedia/Bing), hn, reddit (cookies), github, jina
+Self-hosted: searxng (docker run searxng/searxng + ASEARCH_SEARXNG_URL)
+API keys (any one): tavily, exa, brave, serper, serpapi, you, firecrawl, parallel, perplexity
+  Save with: asearch config set <provider> <key>
+Needs cookies: youtube (~/.asearch/youtube-cookies.txt), reddit (~/.asearch/reddit-cookies.txt)
+Needs install: twitter (pipx install twitter-cli)`,
 	}
 }

@@ -76,7 +76,7 @@ asearch session close -s a1b2c3d4
 | **tavily** | 🔑 | `TAVILY_API_KEY` — AI answers + structured search |
 | **exa** | 🔑 | `EXA_API_KEY` — neural/semantic search |
 | **brave** | 🔑 | `BRAVE_API_KEY` — 35B-page index |
-| **youtube** | 🔧 | `brew install yt-dlp` |
+| **youtube** | 🔧 cookies | Save browser cookies to ~/.asearch/youtube-cookies.txt |
 | **twitter** | 🔧 | `pipx install twitter-cli` |
 
 ## Commands
@@ -173,9 +173,9 @@ OpenCode: Use `asearch open`, then `asearch results read/filter` with returned s
 ## Limitations
 
 - `web` without an API key shows setup instructions instead of results.
-- Reddit public JSON may rate-limit without cookies (`rdt-cli` recommended).
+- Reddit public JSON may rate-limit without cookies (save cookies from browser to ~/.asearch/reddit-cookies.txt).
 - Twitter requires `twitter-cli` with cookie auth.
-- YouTube requires `yt-dlp`.
+- YouTube works via browser cookies (save to ~/.asearch/youtube-cookies.txt).
 
 ## Manual install
 

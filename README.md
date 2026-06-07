@@ -85,7 +85,7 @@ asearch session close -s a1b2c3d4
 | **tavily** | 🔑 | `TAVILY_API_KEY` — AI-ответы + structured search |
 | **exa** | 🔑 | `EXA_API_KEY` — нейро/семантический поиск |
 | **brave** | 🔑 | `BRAVE_API_KEY` — 35B-страничный индекс |
-| **youtube** | 🔧 | `brew install yt-dlp` |
+| **youtube** | 🔧 куки | Сохранить куки из браузера в ~/.asearch/youtube-cookies.txt |
 | **twitter** | 🔧 | `pipx install twitter-cli` |
 
 ## Команды
@@ -182,9 +182,9 @@ OpenCode: Используй `asearch open`, затем `asearch results read/fi
 ## Ограничения
 
 - `web` без API-ключа показывает инструкцию по получению ключа, а не результаты.
-- Reddit public JSON может рейт-лимитить без кук (рекомендуется `rdt-cli`).
+- Reddit public JSON может рейт-лимитить без кук (сохраните куки в ~/.asearch/reddit-cookies.txt).
 - Twitter требует `twitter-cli` с cookie-аутентификацией.
-- YouTube требует `yt-dlp` (неинтерактивный, без JS).
+- YouTube работает через куки браузера (сохраните в ~/.asearch/youtube-cookies.txt).
 
 ## Ручная установка
 

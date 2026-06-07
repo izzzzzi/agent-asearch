@@ -33,7 +33,7 @@ asearch session close -s SID
 
 | Провайдер | Что сделать |
 |-----------|-------------|
-| **youtube** | `pipx install yt-dlp` |
+| **youtube** | Сохранить куки `~/.asearch/youtube-cookies.txt` (Netscape из браузера) |
 | **twitter** | `pipx install twitter-cli` → `twitter login` (откроет браузер один раз) |
 
 ### Self-hosted — свой сервер, без лимитов

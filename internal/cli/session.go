@@ -121,8 +121,14 @@ Zero-config (works immediately, nothing to install):
             Read:   asearch reddit read /r/.../comments/ID
             Info:   asearch reddit info NAME
   github   — gh CLI already on PATH: asearch open --query "..." --source github
+  code     — asearch open --query "func main" --source code  (gh search code)
   jina     — asearch open --query "..." --source jina  (URL-to-markdown reader)
-  youtube  — pipx install yt-dlp && asearch open --query "..." --source youtube
+  youtube  — save cookies from browser to ~/.asearch/youtube-cookies.txt
+
+Manage API keys (persistent, no env vars needed):
+  asearch config set <provider> <key>    # save key to ~/.asearch/config.json
+  asearch config set tavily "tvly-..."  # example
+  asearch config show                      # show all keys (masked)
 
 Self-hosted (unlimited, zero cost, 30 seconds):
   searxng  — docker run -d -p 8080:8080 searxng/searxng
@@ -192,7 +198,7 @@ func newDoctorCommand() *cobra.Command {
 				{Name: "hn", Available: true, Note: "Algolia API"},
 				{Name: "github", Available: toolAvailable("gh"), Tool: "gh", Note: "GitHub CLI — repo search"},
 				{Name: "code", Available: toolAvailable("gh"), Tool: "gh", Note: "GitHub code search (gh search code)"},
-				{Name: "youtube", Available: toolAvailable("yt-dlp"), Tool: "yt-dlp", Note: "install with: brew install yt-dlp"},
+				{Name: "youtube", Available: true, Tool: "", Note: "YouTube search via browser cookies (save ~/.asearch/youtube-cookies.txt)"},
 				{Name: "twitter", Available: toolAvailable("twitter"), Tool: "twitter-cli", Note: "install with: pipx install twitter-cli"},
 			}
 

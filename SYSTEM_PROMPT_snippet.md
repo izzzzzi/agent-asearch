@@ -11,9 +11,10 @@ Save the returned `sid`. Use `asearch results read -s SID --seq 1 --limit 20` fo
 reads. Filter by source with `asearch results filter -s SID --source <source>`. Always close
 sessions with `asearch session close -s SID`.
 
-Sources available without configuration: searxng (docker run searxng/searxng), hn, reddit, github, jina.
-For zero-cost unlimited search: docker run -d -p 8080:8080 searxng/searxng && export ASEARCH_SEARXNG_URL=http://localhost:8080
-For web search with API keys: TAVILY_API_KEY, EXA_API_KEY, BRAVE_API_KEY.
+Sources available without configuration: hn, reddit, github, jina.
+For YouTube: save browser cookies to ~/.asearch/youtube-cookies.txt.
+For web search with API keys: asearch config set tavily|exa|brave <key>.
+For zero-cost self-hosted search: docker run searxng/searxng + ASEARCH_SEARXNG_URL.
 Check available backends with `asearch doctor`.
 
 Prefer reading results in small chunks (--limit 20) to save tokens.

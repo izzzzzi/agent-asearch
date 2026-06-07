@@ -5,9 +5,9 @@ Center block: "asearch" logo, prominent, emerald green. Four zones around it, co
 Left: "LLM Agent" block with robot icon, labels: "Claude Code", "Codex", "Cursor", "OpenCode". Arrow right to asearch: "JSON".
 
 Top — "Sources" zone, split into three columns:
-1. "Zero-config" — checkmark icon, labels: "hn (Algolia API)", "reddit (JSON)", "github (gh CLI)", "jina (Reader)"
+1. "Zero-config" — checkmark icon, labels: "hn (Algolia API)", "reddit (cookies)", "github (gh CLI)", "jina (Reader)", "youtube (cookies)"
 2. "API keys" — key icon, labels: "Tavily", "Exa (neural)", "Brave (35B index)"
-3. "CLI tools" — terminal icon, labels: "yt-dlp → YouTube", "twitter-cli → X"
+3. "CLI tools" — terminal icon, labels: "twitter-cli → X"
 
 Right — "Workflow" zone, three steps connected by arrows:
 1. "open" — search icon, label: "asearch open --query \"...\" --source web,hn,reddit"
