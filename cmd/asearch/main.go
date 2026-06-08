@@ -1,7 +1,13 @@
 package main
 
-import "github.com/izzzzzi/agent-asearch/internal/cli"
+import (
+	"os"
+
+	"github.com/izzzzzi/agent-asearch/internal/cli"
+)
 
 func main() {
-	_ = cli.Execute()
+	if err := cli.Execute(); err != nil {
+		os.Exit(1)
+	}
 }

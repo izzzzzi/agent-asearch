@@ -24,6 +24,7 @@
   "scripts": {
     "test": "node scripts/smoke-test.js",
     "postinstall": "node scripts/install.js",
+    "check": "node --check bin/asearch.js && node --check scripts/install.js && node --check scripts/platform.js && node --check scripts/release-contract-test.js && node --check scripts/smoke-test.js",
     "smoke": "node scripts/smoke-test.js",
     "release:contract": "node scripts/release-contract-test.js",
     "pack:dry": "npm pack --dry-run"

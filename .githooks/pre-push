@@ -1,22 +1,34 @@
 #!/bin/sh
-# Pre-push: run tests + lint
+# Pre-push: run release-readiness gates.
 set -e
-
-echo "→ go test..."
-go test ./... 2>/dev/null || echo "(no tests yet — skipping)"
-
-echo "→ go build..."
-go build ./cmd/asearch
-
-echo "→ go vet..."
-go vet ./...
-
-echo "→ npm smoke (if Node available)..."
-command -v node >/dev/null 2>&1 && node scripts/smoke-test.js 2>/dev/null || echo "(node not available — skipping smoke)"
 
 echo "→ gofmt check..."
 UNFMT=$(gofmt -l .)
 if [ -n "$UNFMT" ]; then
-  echo "WARNING: unformatted files:"
+  echo "ERROR: unformatted files:"
   echo "$UNFMT"
+  exit 1
+fi
+
+echo "→ go build..."
+go build ./...
+
+echo "→ go vet..."
+go vet ./...
+
+echo "→ go test..."
+go test ./...
+
+if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+  echo "→ npm check..."
+  npm run check
+
+  echo "→ npm smoke..."
+  npm test
+
+  echo "→ release contract..."
+  npm run release:contract
+else
+  echo "ERROR: node/npm not available; cannot run release checks"
+  exit 1
 fi

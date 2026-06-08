@@ -6,11 +6,32 @@ repos:
         entry: bash -c 'cd "$(git rev-parse --show-toplevel)" && go build ./...'
         language: system
         pass_filenames: false
-        types: [go]
+        files: '^(cmd|internal)/.*\.go$|^go\.(mod|sum)$'
 
       - id: go-vet
         name: Go vet
         entry: bash -c 'cd "$(git rev-parse --show-toplevel)" && go vet ./...'
         language: system
         pass_filenames: false
-        types: [go]
+        files: '^(cmd|internal)/.*\.go$|^go\.(mod|sum)$'
+
+      - id: node-check
+        name: Node syntax check
+        entry: bash -c 'cd "$(git rev-parse --show-toplevel)" && npm run check'
+        language: system
+        pass_filenames: false
+        files: '^(bin|scripts)/.*\.js$|^package\.json$'
+
+      - id: npm-smoke
+        name: npm smoke test
+        entry: bash -c 'cd "$(git rev-parse --show-toplevel)" && npm test'
+        language: system
+        pass_filenames: false
+        files: '^(bin|scripts)/.*\.js$|^package\.json$|^(cmd|internal)/.*\.go$|^go\.(mod|sum)$'
+
+      - id: release-contract
+        name: Release contract test
+        entry: bash -c 'cd "$(git rev-parse --show-toplevel)" && npm run release:contract'
+        language: system
+        pass_filenames: false
+        files: '^(bin|scripts)/.*\.js$|^package\.json$|^(cmd|internal)/.*\.go$|^go\.(mod|sum)$'

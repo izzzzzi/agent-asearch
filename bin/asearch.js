@@ -3,29 +3,34 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
+function executableExists(file) {
+  try {
+    fs.accessSync(file, fs.constants.X_OK);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 function getBinaryPath() {
-  const platform = process.platform;
-  const arch = process.arch === 'x64' ? 'amd64' : process.arch === 'arm64' ? 'arm64' : process.arch;
-  const ext = platform === 'win32' ? '.exe' : '';
+  const ext = process.platform === 'win32' ? '.exe' : '';
+
+  if (process.env.ASEARCH_BIN) {
+    if (executableExists(process.env.ASEARCH_BIN)) return process.env.ASEARCH_BIN;
+    console.error(`[asearch] ASEARCH_BIN does not point to an executable: ${process.env.ASEARCH_BIN}`);
+    process.exit(1);
+  }
+
+  // 1. Same directory as wrapper. This keeps package-local/dev installs deterministic.
+  const localPath = path.join(__dirname, 'asearch' + ext);
+  if (executableExists(localPath)) return localPath;
 
   const stateDir = process.env.ASEARCH_STATE_DIR
     || path.join(process.env.HOME || process.env.USERPROFILE || '', '.asearch');
 
-  // 1. ~/.asearch/bin/asearch (installed by postinstall)
+  // 2. ~/.asearch/bin/asearch (installed by postinstall)
   const installedPath = path.join(stateDir, 'bin', 'asearch' + ext);
-  if (fs.existsSync(installedPath)) return installedPath;
-
-  // 2. Same directory as wrapper
-  const localPath = path.join(__dirname, 'asearch' + ext);
-  if (fs.existsSync(localPath)) return localPath;
-
-  // 3. PATH lookup (skip if it's this same script)
-  try {
-    const which = require('child_process').execSync('which asearch 2>/dev/null || command -v asearch', { encoding: 'utf8' }).trim();
-    if (which && !which.includes('bin/asearch.js')) {
-      return which;
-    }
-  } catch (_) {}
+  if (executableExists(installedPath)) return installedPath;
 
   console.error('[asearch] binary not found — run: npm explore agent-asearch -g -- npm run postinstall');
   process.exit(1);
@@ -35,4 +40,17 @@ const bin = getBinaryPath();
 const args = process.argv.slice(2);
 
 const child = spawn(bin, args, { stdio: 'inherit' });
-child.on('close', (code) => { process.exit(code); });
+child.on('error', (err) => {
+  console.error(`[asearch] failed to start binary: ${err.message}`);
+  process.exit(1);
+});
+child.on('close', (code, signal) => {
+  if (typeof code === 'number') {
+    process.exit(code);
+  }
+  if (signal) {
+    const signalNumber = Number(String(signal).replace(/^SIG/, ''));
+    process.exit(Number.isInteger(signalNumber) ? 128 + signalNumber : 1);
+  }
+  process.exit(1);
+});

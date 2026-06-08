@@ -100,11 +100,11 @@ func xAPIv2Search(query string, limit int, bearer string) ([]Result, error) {
 }
 
 type tweetV2 struct {
-	ID        string         `json:"id"`
-	Text      string         `json:"text"`
-	AuthorID  string         `json:"author_id"`
-	CreatedAt string         `json:"created_at"`
-	Metrics   *tweetMetrics  `json:"public_metrics"`
+	ID        string        `json:"id"`
+	Text      string        `json:"text"`
+	AuthorID  string        `json:"author_id"`
+	CreatedAt string        `json:"created_at"`
+	Metrics   *tweetMetrics `json:"public_metrics"`
 }
 
 type tweetMetrics struct {

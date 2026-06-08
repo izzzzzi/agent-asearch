@@ -98,10 +98,10 @@ func (b *TavilyBackend) Search(query string, limit int) ([]Result, error) {
 			Score:      r.Score,
 			Engagement: fmt.Sprintf("relevance: %.2f", r.Score),
 			RawMeta: map[string]any{
-				"title":     r.Title,
-				"url":       r.URL,
-				"score":     r.Score,
-				"type":      "result",
+				"title": r.Title,
+				"url":   r.URL,
+				"score": r.Score,
+				"type":  "result",
 			},
 		})
 	}

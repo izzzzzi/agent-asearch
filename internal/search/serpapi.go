@@ -59,11 +59,11 @@ func (b *SerpAPIBackend) Search(query string, limit int) ([]Result, error) {
 			Source: SourceWeb, Title: r.Title, URL: r.Link, Snippet: snippet, Date: r.Date,
 			Engagement: "via Google (SerpAPI)",
 			RawMeta: map[string]any{
-				"title":    r.Title,
-				"url":      r.Link,
-				"snippet":  r.Snippet,
-				"date":     r.Date,
-				"source":   "serpapi",
+				"title":   r.Title,
+				"url":     r.Link,
+				"snippet": r.Snippet,
+				"date":    r.Date,
+				"source":  "serpapi",
 			},
 		})
 	}

@@ -1,36 +1,82 @@
 #!/usr/bin/env node
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
+
+const root = path.join(__dirname, '..');
+const pkg = require('../package.json');
 
 console.log('=== asearch smoke test ===');
 
+const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'asearch-smoke-'));
+const stateDir = path.join(tmpDir, 'state');
+const binPath = path.join(tmpDir, process.platform === 'win32' ? 'asearch.exe' : 'asearch');
+let failed = 0;
+
+function run(command, args, options = {}) {
+  return spawnSync(command, args, {
+    cwd: root,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      ASEARCH_BIN: options.useWrapper === false ? process.env.ASEARCH_BIN : binPath,
+      ASEARCH_STATE_DIR: stateDir,
+      ...options.env,
+    },
+  });
+}
+
+function record(name, ok, detail = '') {
+  console.log(`${name}: ${ok ? 'PASS' : 'FAIL'}${detail ? ` ${detail}` : ''}`);
+  if (!ok) failed++;
+}
+
+function parseJson(text) {
+  return JSON.parse(String(text || '').trim());
+}
+
+function buildTestBinary() {
+  const result = run('go', [
+    'build',
+    '-ldflags', `-X github.com/izzzzzi/agent-asearch/internal/cli.Version=${pkg.version}`,
+    '-o', binPath,
+    './cmd/asearch',
+  ], { useWrapper: false });
+  if (result.status !== 0) {
+    process.stderr.write(result.stdout || '');
+    process.stderr.write(result.stderr || '');
+    throw new Error(`failed to build test binary (exit ${result.status})`);
+  }
+}
+
 try {
-  // Version
-  const ver = execSync('node bin/asearch.js version', { stdio: 'pipe', cwd: __dirname + '/..' }).toString();
-  const v = JSON.parse(ver);
-  console.log('version:', v.ok ? 'PASS' : 'FAIL', v.version);
+  buildTestBinary();
 
-  // Help
-  const help = execSync('node bin/asearch.js --help', { stdio: 'pipe', cwd: __dirname + '/..' }).toString();
-  const h = JSON.parse(help);
-  console.log('help:', h.ok ? 'PASS' : 'FAIL', h.tool);
+  const ver = run('node', ['bin/asearch.js', 'version']);
+  const v = parseJson(ver.stdout);
+  record('version', ver.status === 0 && v.ok === true && v.version === pkg.version, v.version);
 
-  // Prompt
-  const prompt = execSync('node bin/asearch.js prompt', { stdio: 'pipe', cwd: __dirname + '/..' }).toString();
-  console.log('prompt:', prompt.length > 100 ? 'PASS' : 'FAIL');
+  const help = run('node', ['bin/asearch.js', '--help']);
+  const h = parseJson(help.stdout);
+  record('help', help.status === 0 && h.ok === true && h.tool === 'asearch', h.tool);
 
-  // Doctor
-  const doc = execSync('node bin/asearch.js doctor', { stdio: 'pipe', cwd: __dirname + '/..' }).toString();
-  const d = JSON.parse(doc);
-  console.log('doctor:', d.checks ? `PASS (${d.checks.length} backends)` : 'FAIL');
+  const prompt = run('node', ['bin/asearch.js', 'prompt']);
+  record('prompt', prompt.status === 0 && prompt.stdout.length > 100, `${prompt.stdout.length} chars`);
 
-  // Session list
-  const sl = execSync('node bin/asearch.js session list', { stdio: 'pipe', cwd: __dirname + '/..' }).toString();
-  const s = JSON.parse(sl);
-  console.log('session list:', s.ok ? 'PASS' : 'FAIL', 'count:', s.count);
+  const doc = run('node', ['bin/asearch.js', 'doctor']);
+  const d = parseJson(doc.stdout);
+  record('doctor', doc.status === 0 && Array.isArray(d.checks), `(${Array.isArray(d.checks) ? d.checks.length : 0} backends)`);
 
-  console.log('\n=== all smoke tests passed ===');
+  const sl = run('node', ['bin/asearch.js', 'session', 'list']);
+  const s = parseJson(sl.stdout);
+  record('session list', sl.status === 0 && s.ok === true && s.count === 0, `count: ${s.count}`);
 } catch (e) {
   console.error('FAIL:', e.message);
-  process.exit(1);
+  failed++;
+} finally {
+  fs.rmSync(tmpDir, { recursive: true, force: true });
 }
+
+console.log(`\n=== ${failed === 0 ? 'all smoke tests passed' : failed + ' smoke tests FAILED'} ===`);
+process.exit(failed === 0 ? 0 : 1);
